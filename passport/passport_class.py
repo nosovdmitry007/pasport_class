@@ -1,12 +1,10 @@
 import cv2
 import numpy as np
-import pprint
 import easyocr
 import json
 
 class passport:
-    def __init__(self,photo):
-        self.photo = photo
+    def __init__(self):
         self.reader = easyocr.Reader(['ru'], recog_network='custom_example', gpu=False)  # распознание с дообучением
         self.net = cv2.dnn.readNet(r"C:\Users\nosov\PycharmProjects\pasport_class\passport\yolov4-obj_last.weights",
                               r"C:\Users\nosov\PycharmProjects\pasport_class\passport\yolov4-obj.cfg")
@@ -80,11 +78,11 @@ class passport:
         # cv2.imwrite('oblosty/' + ph, imgWarpColored)
         return self.imgWarpColored
 
-    def yolo_4(self,put):
+    def yolo_4(self, put):
         # Load Yolo
 
         layer_names = self.net.getLayerNames()
-        output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+        output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
         # Loading image
         img = cv2.imread(put)
         height, width, channels = img.shape
@@ -127,7 +125,7 @@ class passport:
             flattenlist = lambda d: [item for element in d for item in flattenlist(element)] if type(d) is list else [d]
             z.append(flattenlist(d))
             d = []
-        return self.img, self.z
+        return img, z
 
     def rotate_image(self,mat, angle):
         """
@@ -154,7 +152,7 @@ class passport:
 
         # поверните изображение с новыми границами и преобразованной матрицей поворота
         ser_nom = cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
-        return self.ser_nom
+        return ser_nom
 
     # вырезаем области после детекции YOLO4
 
@@ -208,9 +206,9 @@ class passport:
 
         # Передаем словарь с областями на распознание
 
-        return self.oblasty
+        return oblasty
 
-    def recognition_slovar(self,jpg, oblasty):
+    def recognition_slovar(self, oblasty):
         # __________________________________________________________________
         # задаем начальные значения
         data = {}
@@ -223,7 +221,7 @@ class passport:
         acc_ocr = 0
         col_ocr = 0
         # ________________________________________________________
-        d['ID'] = (jpg.split('.')[0]).split('/')[-1]  # записываем номер фотографии (берем имя файла
+        # d['ID'] = (jpg.split('.')[0]).split('/')[-1]  # записываем номер фотографии (берем имя файла
 
         for i, v in oblasty.items():  # цикл по всем найденым полям с их распределения по классам
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)  # переводим области в серый цвет
@@ -308,7 +306,7 @@ class passport:
         data['pasport'].append(d)
         with open('data.json', 'w', encoding='utf-8') as f:
             f.write(json.dumps(data, ensure_ascii=False))
-        pprint.pprint(data['pasport'])
+        # pprint.pprint(data['pasport'])
         return data['pasport']
 
 

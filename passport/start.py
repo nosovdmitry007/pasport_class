@@ -1,13 +1,8 @@
-import time
-from memory_profiler import profile
-from yolo_4 import yolo_4
-put ='baza/test/20132.jpg'
-@profile()
+import pprint
+from passport_class import passport
 
-def start(put):
-    start_time_y = time.time()
-    yolo_4(put)
-    print("--- %s seconds all---" % (time.time() - start_time_y))
-
-start(put)
-
+z = passport()
+img,detect = z.yolo_4(r'C:\Users\nosov\PycharmProjects\pasport_class\passport\baza\test\20131.jpg')
+obl = z.oblasty_yolo_4(img,detect)
+rec = z.recognition_slovar(obl)
+pprint.pprint(rec)
