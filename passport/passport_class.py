@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import easyocr
 import json
-
+import math
 class passport:
     def __init__(self):
         self.reader = easyocr.Reader(['ru'], recog_network='custom_example', gpu=False)  # распознание с дообучением
@@ -154,6 +154,8 @@ class passport:
         ser_nom = cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
         return ser_nom
 
+    def zero(self,n):
+        return n * (n > 0)
     # вырезаем области после детекции YOLO4
 
     def oblasty_yolo_4(self, image, box):
@@ -176,33 +178,18 @@ class passport:
                 if 'issued_by_whom' in cat:
                     ob = cat + '_' + str(iss)
                     iss += 1
-                    yy = y - 5
-                    xx = x - 30
-                    if yy < 0:
-                        yy = 0
-                    if xx < 0:
-                        xx = 0
-                    cropped = image[yy:y + h + 5, xx:x + w + 30]
-                    oblasty[ob] = cropped
                 elif 'place_of_birth' in cat:
                     ob = cat + '_' + str(plac)
                     plac += 1
-                    yy = y - 5
-                    xx = x - 30
-                    if yy < 0:
-                        yy = 0
-                    if xx < 0:
-                        xx = 0
-                    cropped = image[yy:y + h, xx:x + w + 30]
-                    oblasty[ob] = cropped
-                elif 'series' in cat:
+                elif 'series' not in cat:
                     ob = cat
-                    cropped = image[y - 10:y + h + 10, x - 3:x + w + 3]
+                oblasty[ob] = image[self.zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03),
+                              self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+                if 'series' in cat:
+                    ob = cat
+                    cropped = image[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1),
+                              self.zero(x - math.ceil(w * 0.03)):x + math.ceil(w * 1.03)]
                     oblasty[ob] = self.rotate_image(cropped, 90)
-                else:
-                    ob = cat
-                    cropped = image[y:y + h, x:x + w]
-                    oblasty[ob] = cropped
 
         # Передаем словарь с областями на распознание
 
@@ -261,11 +248,11 @@ class passport:
                     pass
                 elif 'date' in i:
                     pole = pole.replace('.', '').replace(' ', '').replace('-', '')
-                    pole = pole[:2] + '.' + pole[2:4] + '.' + pole[4:]
+                    pole = pole[:2] + '.' + pole[2:4] + '.' + pole[4:8]
                     d[i.split('.', 1)[0]] = pole.upper().strip()
                 elif 'cod' in i:
                     pole = pole.replace(' . ', '').replace(' ', '').replace('-', '')
-                    pole = pole[:3] + '-' + pole[3:]
+                    pole = pole[:3] + '-' + pole[3:6]
                     d[i.split('.', 1)[0]] = pole.upper().strip()
                     # заменяем пол
                 elif 'gender' in i:
@@ -283,18 +270,16 @@ class passport:
             place_of_birth = place_of_birth.replace('С ', ' С. ')
         if issued_by_whom[:2] == 'C ':
             issued_by_whom = issued_by_whom.replace('С ', ' С. ')
-        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' Г ', ' Г. ').replace('ОБЛ ',
-                                                                                                'ОБЛ. ').replace('ПОС ',
-                                                                                                                 'ПОС. ').replace(
-            ' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
-        issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ').replace(' Г ', ' Г. ').replace(
-            'ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace(' . ', '. ').replace(' .', '.').replace('  ',
-                                                                                                      ' ').replace('..',
-                                                                                                                   '.')
+        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' Г ', ' Г. ')\
+            .replace('ОБЛ ','ОБЛ. ').replace('ПОС ','ПОС. ').replace(' . ', '. ')\
+            .replace(' .', '.').replace('  ', ' ').replace('..', '.')
+        issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
+            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ')\
+            .replace(' . ', '. ').replace(' .', '.').replace('  ',' ').replace('..','.')
         if series_and_number:
             series_and_number = series_and_number.replace(' ', '')
             if len(series_and_number) == 10:
-                series_and_number = series_and_number[:2] + ' ' + series_and_number[2:4] + ' ' + series_and_number[4:]
+                series_and_number = series_and_number[:2] + ' ' + series_and_number[2:4] + ' ' + series_and_number[4:10]
             else:
                 series_and_number = 'поле распознано не полностью' + series_and_number
         else:
