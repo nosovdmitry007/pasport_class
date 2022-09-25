@@ -171,6 +171,7 @@ class passport:
             x = int(l[1])
             h = int(l[4])
             w = int(l[3])
+            ob = ''
             # обрезаем области и сохраняем их в словарь, добавляем к областе пиксели для увеличения области распознавания
             if ('signature' in cat) or ('photograph' in cat):
                 pass  # поля подпись и фотографию не распознаем, поэтому с ними ничего не делаем
@@ -183,7 +184,8 @@ class passport:
                     plac += 1
                 elif 'series' not in cat:
                     ob = cat
-                oblasty[ob] = image[self.zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03),
+                if ob:
+                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03),
                               self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
                 if 'series' in cat:
                     ob = cat
