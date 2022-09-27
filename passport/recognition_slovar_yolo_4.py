@@ -4,7 +4,11 @@ import json
 import cv2
 import time
 #запускается 1 раз для скачивания библиотек
-reader = easyocr.Reader(['ru'], recog_network='custom_example', gpu=False) #распознание с дообучением
+reader = easyocr.Reader(['ru'],
+                        model_storage_directory='EasyOCR/model',
+                        user_network_directory='EasyOCR/user_network',
+                        recog_network='custom_example',
+                        gpu=False) #распознание с дообучением
 #распознание текста
 def recognition_slovar(jpg,oblasty):
     start_time_r = time.time() #засекаем время выполнеия функции
@@ -82,8 +86,12 @@ def recognition_slovar(jpg,oblasty):
         place_of_birth = place_of_birth.replace('С ', ' С. ')
     if issued_by_whom[:2] == 'C ':
         issued_by_whom = issued_by_whom.replace('С ', ' С. ')
-    place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
-    issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ').replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+    place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
+        .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+    issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
+        .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
     if series_and_number:
         series_and_number = series_and_number.replace(' ', '')
         if len(series_and_number) == 10:

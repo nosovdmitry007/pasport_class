@@ -5,10 +5,13 @@ import json
 import math
 class passport:
     def __init__(self):
-        self.reader = easyocr.Reader(['ru'], recog_network='custom_example', gpu=False)  # распознание с дообучением
-        self.net = cv2.dnn.readNet(r"C:\Users\nosov\PycharmProjects\pasport_class\passport\yolov4-obj_last.weights",
-                              r"C:\Users\nosov\PycharmProjects\pasport_class\passport\yolov4-obj.cfg")
-        with open(r"C:\Users\nosov\PycharmProjects\pasport_class\passport\passport.names", "r") as f:
+        self.reader = easyocr.Reader(['ru'],
+                        model_storage_directory='./EasyOCR/model',
+                        user_network_directory='./EasyOCR/user_network',
+                        recog_network='custom_example',
+                        gpu=False) # распознание с дообучением
+        self.net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
+        with open("./passport.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
     def reorder(self,myPoints):
 
@@ -272,12 +275,12 @@ class passport:
             place_of_birth = place_of_birth.replace('С ', ' С. ')
         if issued_by_whom[:2] == 'C ':
             issued_by_whom = issued_by_whom.replace('С ', ' С. ')
-        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' Г ', ' Г. ')\
-            .replace('ОБЛ ','ОБЛ. ').replace('ПОС ','ПОС. ').replace(' . ', '. ')\
-            .replace(' .', '.').replace('  ', ' ').replace('..', '.')
+        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
+            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
         issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ')\
-            .replace(' . ', '. ').replace(' .', '.').replace('  ',' ').replace('..','.')
+            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
         if series_and_number:
             series_and_number = series_and_number.replace(' ', '')
             if len(series_and_number) == 10:
