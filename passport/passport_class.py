@@ -13,7 +13,9 @@ class passport:
         self.net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
         with open("./passport.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
-
+        self.net_round = cv2.dnn.readNet("./yolo_round/yolov4-obj_last_round.weights", "./yolo_round/yolov4-obj_round.cfg")
+        with open("./yolo_round/round.names","r") as f:
+            self.classes_round = [line.strip() for line in f.readlines()]
     def zero(self,n):
         return n * (n > 0)
     def rotate_image(self,mat, angle):
@@ -44,19 +46,17 @@ class passport:
         return ser_nom
     def yolo_4_round(self,put):
     # Load Yolo
-        net_round = cv2.dnn.readNet("./yolo_round/yolov4-obj_last_round.weights", "./yolo_round/yolov4-obj_round.cfg")
-        with open("./yolo_round/round.names","r") as f:
-            classes = [line.strip() for line in f.readlines()]
-        layer_names = net_round.getLayerNames()
-        output_layers = [layer_names[i - 1] for i in net_round.getUnconnectedOutLayers()]
+
+        layer_names = self.net_round.getLayerNames()
+        output_layers = [layer_names[i - 1] for i in self.net_round.getUnconnectedOutLayers()]
         # Loading image
         img = cv2.imread(put)
         height, width, channels = img.shape
 
         # Detecting objects#
         blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-        net_round.setInput(blob)
-        outs = net_round.forward(output_layers)
+        self.net_round.setInput(blob)
+        outs = self.net_round.forward(output_layers)
 
         # Showing informations on the screen
         class_ids = []
@@ -85,7 +85,7 @@ class passport:
         l = []
         for i in indexes:
             box = boxes[i]
-            d.append(classes[class_ids[i]])
+            d.append(self.classes_round[class_ids[i]])
             d.append(box)
             d.append(confidences[i])
             flattenlist = lambda d:[item for element in d for item in flattenlist(element)] if type(d) is list else [d]
