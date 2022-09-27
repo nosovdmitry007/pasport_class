@@ -10,7 +10,7 @@ reader = easyocr.Reader(['ru'],
                         recog_network='custom_example',
                         gpu=False) #распознание с дообучением
 #распознание текста
-def recognition_slovar(jpg,oblasty):
+def recognition_slovar(oblasty):
     start_time_r = time.time() #засекаем время выполнеия функции
 #__________________________________________________________________
     #задаем начальные значения
@@ -24,7 +24,7 @@ def recognition_slovar(jpg,oblasty):
     acc_ocr = 0
     col_ocr = 0
 #________________________________________________________
-    d['ID'] = (jpg.split('.')[0]).split('/')[-1] #записываем номер фотографии (берем имя файла
+    # d['ID'] = (jpg.split('.')[0]).split('/')[-1] #записываем номер фотографии (берем имя файла
 
     for i,v in oblasty.items(): #цикл по всем найденым полям с их распределения по классам
         image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB) #переводим области в серый цвет
@@ -97,7 +97,7 @@ def recognition_slovar(jpg,oblasty):
         if len(series_and_number) == 10:
             series_and_number = series_and_number[:2]+' ' + series_and_number[2:4] + ' ' + series_and_number[4:10]
         else:
-            series_and_number = 'поле распознано не полностью' + series_and_number
+            series_and_number = 'поле распознано не полностью ' + series_and_number
     else:
         series_and_number = 'поле не распознано'
 # Создаем файлы json and csv

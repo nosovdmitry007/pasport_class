@@ -3,7 +3,7 @@ import numpy as np
 import time
 from oblasty_yolo_4 import oblasty_yolo_4
 import pandas as pd
-def yolo_4(put):
+def yolo_4(img):
     start_time = time.time()
     # Load Yolo
     net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
@@ -12,7 +12,7 @@ def yolo_4(put):
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
     # Loading image
-    img = cv2.imread(put)
+    # img = cv2.imread(put)
     height, width, channels = img.shape
 
     # Detecting objects#
@@ -42,7 +42,7 @@ def yolo_4(put):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.3)
     d = []
     z = []
     for i in indexes:
@@ -54,5 +54,5 @@ def yolo_4(put):
         z.append(flattenlist(d))
         d=[]
     print("--- %s seconds yolo_4---" % (time.time() - start_time))
-    oblasty_yolo_4(put,img,z)
+    oblasty_yolo_4(img,z)
 

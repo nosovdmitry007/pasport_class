@@ -32,7 +32,7 @@ def zero( n ):
     return n * ( n > 0 )
 #вырезаем области после детекции YOLO4
 
-def oblasty_yolo_4(put,image,box):
+def oblasty_yolo_4(image,box):
 
     start_time_ob = time.time()
     oblasty={}
@@ -67,4 +67,4 @@ def oblasty_yolo_4(put,image,box):
                 oblasty[ob] = rotate_image(cropped, 90)
 #Передаем словарь с областями на распознание
     print("--- %s seconds oblasty---" % (time.time() - start_time_ob))
-    recognition_slovar(put, oblasty)
+    recognition_slovar(oblasty)

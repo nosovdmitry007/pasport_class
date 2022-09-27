@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 # import utlis
-
 from yolo_4 import yolo_4
 #Программа по автоматичекому выравниванию паспорта, если есть фон, без фона работает не корректно
 from memory_profiler import profile
@@ -35,19 +34,19 @@ def biggestContour(contours):
     return biggest,max_area
 
 # @profile()
-def auto_rotait(photo,out):
+def auto_rotait(img):
   ########################################################################
 
-  heightImg = 640
-  widthImg = 455
+  # heightImg = 640
+  # widthImg = 455
   ########################################################################
 
-  ph = photo.split('/')[-1]
-  pathImage = photo
+  # ph = photo.split('/')[-1]
+  # pathImage = photo
 
-  img = cv2.imread(pathImage)
-  img = cv2.resize(img, (widthImg, heightImg)) # ИЗМЕНЕНИЕ РАЗМЕРА ИЗОБРАЖЕНИЯ
-
+  # img = cv2.imread(pathImage)
+  # img = cv2.resize(img, (widthImg, heightImg)) # ИЗМЕНЕНИЕ РАЗМЕРА ИЗОБРАЖЕНИЯ
+  heightImg, widthImg, channels = img.shape
   imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # ПРЕОБРАЗОВАНИЕ ИЗОБРАЖЕНИЯ В ОТТЕНКИ СЕРОГО
   imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1) # ДОБАВИТЬ РАЗМЫТИЕ ПО ГАУССУ
   imgThreshold = cv2.Canny(imgBlur,20,20)#thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
@@ -71,4 +70,5 @@ def auto_rotait(photo,out):
       print('некоректная фотография, необходимо сфотографировать паспорт на однородном фоне\n фотография не обрезалась изменен размер')
       imgWarpColored = img
   # cv2.imwrite('oblosty/' + ph, imgWarpColored)
-  yolo_4(imgWarpColored,out)
+  cv2.imwrite('auto.jpg',imgWarpColored)
+  yolo_4(imgWarpColored)
