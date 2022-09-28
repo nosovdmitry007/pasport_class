@@ -38,15 +38,23 @@ def recognition_slovar(oblasty):
             result = reader.readtext(image, allowlist='.МУЖЕНмужен')
         else:
             result = reader.readtext(image,
-                                     allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
+                                     allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890',
+                                     min_size=25)
+        print(result)
         pole = ''
         # print(result)
         # Сцепляем распознаные поля в одной области и подсчитыаем среднию увереность
         for k in range(len(result)):
             if result[k][2] * 100 >= 35:
-                pole = pole + ' ' + str(result[k][1])
-                acc_ocr += result[k][2] * 100
-                col_ocr += 1
+                if str(result[k][1]).isnumeric():
+                    if result[k][2] * 100 >= 70:
+                        pole = pole + ' ' + str(result[k][1])
+                        acc_ocr += result[k][2] * 100
+                        col_ocr += 1
+                else:
+                        pole = pole + ' ' + str(result[k][1])
+                        acc_ocr += result[k][2] * 100
+                        col_ocr += 1
         #ели поле не пустое то записываем результат распознавания (json +csv)
         if pole:
 

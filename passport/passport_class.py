@@ -80,7 +80,7 @@ class passport:
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
 
-        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.2)
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.3)
         d = []
         l = []
         for i in indexes:
@@ -95,7 +95,7 @@ class passport:
         x = int(l[0][1])
         h = int(l[0][4])
         w = int(l[0][3])
-        crop= img[self.zero(y - math.ceil(h * 0.2)):y + math.ceil(h * 1.2), self.zero(x - math.ceil(w * 0.2)):x + math.ceil(w * 1.23)]
+        crop= img[self.zero(y - math.ceil(h * 0.4)):y + math.ceil(h * 1.4), self.zero(x - math.ceil(w * 0.4)):x + math.ceil(w * 1.4)]
         crop = self.rotate_image(crop,int(cat))
         # cv2.imwrite('crop.jpg', crop)
         return crop
@@ -203,7 +203,7 @@ class passport:
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
 
-        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.2)
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.4, 0.3)
         d = []
         z = []
         for i in indexes:
@@ -248,8 +248,8 @@ class passport:
                 elif 'series' not in cat:
                     ob = cat
                 if ob:
-                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03),
-                              self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.07)):y + math.ceil(h * 1.3),
+                                  self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
                 if 'series' in cat:
                     ob = cat
                     cropped = image[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1),
@@ -287,14 +287,21 @@ class passport:
                 result = self.reader.readtext(image, allowlist='.МУЖЕНмужен')
             else:
                 result = self.reader.readtext(image,
-                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
+                                        allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890',
+                                        min_size=25)
             pole = ''
             # Сцепляем распознаные поля в одной области и подсчитыаем среднию увереность
             for k in range(len(result)):
                 if result[k][2] * 100 >= 35:
-                    pole = pole + ' ' + str(result[k][1])
-                    acc_ocr += result[k][2] * 100
-                    col_ocr += 1
+                    if str(result[k][1]).isnumeric():
+                        if result[k][2] * 100 >= 70:
+                            pole = pole + ' ' + str(result[k][1])
+                            acc_ocr += result[k][2] * 100
+                            col_ocr += 1
+                    else:
+                            pole = pole + ' ' + str(result[k][1])
+                            acc_ocr += result[k][2] * 100
+                            col_ocr += 1
             # ели поле не пустое то записываем результат распознавания (json +csv)
             if pole:
                 pole = pole.strip()  # удаляем пробелы вконце и в неачале

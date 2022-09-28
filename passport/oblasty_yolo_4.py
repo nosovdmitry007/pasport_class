@@ -60,8 +60,8 @@ def oblasty_yolo_4(image,box):
             elif 'series' not in cat:
                 ob = cat
             if ob:
-                oblasty[ob] = image[zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
-                cv2.imwrite(ob+'.jpg',image[zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)])
+                oblasty[ob] = image[zero(y - math.ceil(h * 0.07)):y + math.ceil(h * 1.3), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+                cv2.imwrite(ob+'.jpg',image[zero(y - math.ceil(h*0.07)):y + math.ceil(h*1.3), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)])
             if 'series' in cat:
                 ob = cat
                 cropped = image[zero(y - math.ceil(h*0.1)):y + math.ceil(h*1.1), zero(x - math.ceil(w*0.03)):x + math.ceil(w*1.03)]

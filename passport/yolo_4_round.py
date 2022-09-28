@@ -73,7 +73,7 @@ def yolo_4_round(put):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.4, 0.4)
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.3)
     d = []
     l = []
     print(indexes)
