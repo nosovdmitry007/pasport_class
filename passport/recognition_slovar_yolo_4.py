@@ -40,6 +40,7 @@ def recognition_slovar(oblasty):
             result = reader.readtext(image,
                                      allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
         pole = ''
+        # print(result)
         # Сцепляем распознаные поля в одной области и подсчитыаем среднию увереность
         for k in range(len(result)):
             if result[k][2] * 100 >= 35:
@@ -48,6 +49,7 @@ def recognition_slovar(oblasty):
                 col_ocr += 1
         #ели поле не пустое то записываем результат распознавания (json +csv)
         if pole:
+
             pole = pole.strip()#удаляем пробелы вконце и в неачале
             #сцепляем 
             if 'issued_by_whom' in i:
@@ -88,10 +90,10 @@ def recognition_slovar(oblasty):
         issued_by_whom = issued_by_whom.replace('С ', ' С. ')
     place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
         .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
     issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
         .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
     if series_and_number:
         series_and_number = series_and_number.replace(' ', '')
         if len(series_and_number) == 10:

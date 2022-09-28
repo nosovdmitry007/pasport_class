@@ -6,15 +6,15 @@ import math
 class passport:
     def __init__(self):
         self.reader = easyocr.Reader(['ru'],
-                        model_storage_directory='./EasyOCR/model',
-                        user_network_directory='./EasyOCR/user_network',
+                        model_storage_directory='EasyOCR/model',
+                        user_network_directory='EasyOCR/user_network',
                         recog_network='custom_example',
                         gpu=False) # распознание с дообучением
-        self.net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
-        with open("./passport.names", "r") as f:
+        self.net = cv2.dnn.readNet("yolov4-obj_last.weights", "yolov4-obj.cfg")
+        with open("passport.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
-        self.net_round = cv2.dnn.readNet("./yolo_round/yolov4-obj_last_round.weights", "./yolo_round/yolov4-obj_round.cfg")
-        with open("./yolo_round/round.names","r") as f:
+        self.net_round = cv2.dnn.readNet("yolo_round/yolov4-obj_last_round.weights", "yolo_round/yolov4-obj_round.cfg")
+        with open("yolo_round/round.names","r") as f:
             self.classes_round = [line.strip() for line in f.readlines()]
     def zero(self,n):
         return n * (n > 0)
@@ -67,7 +67,7 @@ class passport:
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > 0.5:
+                if confidence > 0.3:
                     # Object detected
                     center_x = int(detection[0] * width)
                     center_y = int(detection[1] * height)
@@ -80,7 +80,7 @@ class passport:
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
 
-        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.2)
         d = []
         l = []
         for i in indexes:
@@ -142,7 +142,7 @@ class passport:
         heightImg, widthImg, channels = img.shape
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # ПРЕОБРАЗОВАНИЕ ИЗОБРАЖЕНИЯ В ОТТЕНКИ СЕРОГО
         imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)  # ДОБАВИТЬ РАЗМЫТИЕ ПО ГАУССУ
-        imgThreshold = cv2.Canny(imgBlur, 20, 20)  # thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
+        imgThreshold = cv2.Canny(imgBlur, 30, 30)  # thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
         kernel = np.ones((5, 5))
         imgDial = cv2.dilate(imgThreshold, kernel, iterations=2)  # ПРИМЕНИТЕ РАСШИРЕНИЕ
         imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # НАНЕСИТЕ ЭРОЗИЮ
@@ -190,7 +190,7 @@ class passport:
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > 0.5:
+                if confidence > 0.3:
                     # Object detected
                     center_x = int(detection[0] * width)
                     center_y = int(detection[1] * height)
@@ -203,7 +203,7 @@ class passport:
                     confidences.append(float(confidence))
                     class_ids.append(class_id)
 
-        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.2)
         d = []
         z = []
         for i in indexes:
@@ -336,11 +336,11 @@ class passport:
         if issued_by_whom[:2] == 'C ':
             issued_by_whom = issued_by_whom.replace('С ', ' С. ')
         place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+                .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+                .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
         issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+                .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
+                .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
         if series_and_number:
             series_and_number = series_and_number.replace(' ', '')
             if len(series_and_number) == 10:

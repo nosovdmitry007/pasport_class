@@ -29,7 +29,7 @@ def yolo_4(img):
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
-            if confidence > 0.5:
+            if confidence > 0.2:
                 # Object detected
                 center_x = int(detection[0] * width)
                 center_y = int(detection[1] * height)
@@ -42,7 +42,7 @@ def yolo_4(img):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.3)
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.2)
     d = []
     z = []
     for i in indexes:
@@ -52,7 +52,9 @@ def yolo_4(img):
         d.append(confidences[i])
         flattenlist = lambda d:[item for element in d for item in flattenlist(element)] if type(d) is list else [d]
         z.append(flattenlist(d))
+        # print(d)
         d=[]
+
     print("--- %s seconds yolo_4---" % (time.time() - start_time))
     oblasty_yolo_4(img,z)
 

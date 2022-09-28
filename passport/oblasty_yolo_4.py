@@ -61,10 +61,13 @@ def oblasty_yolo_4(image,box):
                 ob = cat
             if ob:
                 oblasty[ob] = image[zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+                cv2.imwrite(ob+'.jpg',image[zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)])
             if 'series' in cat:
                 ob = cat
                 cropped = image[zero(y - math.ceil(h*0.1)):y + math.ceil(h*1.1), zero(x - math.ceil(w*0.03)):x + math.ceil(w*1.03)]
                 oblasty[ob] = rotate_image(cropped, 90)
+                cv2.imwrite(ob+'.jpg',image[zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03), zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)])
+
 #Передаем словарь с областями на распознание
     print("--- %s seconds oblasty---" % (time.time() - start_time_ob))
     recognition_slovar(oblasty)

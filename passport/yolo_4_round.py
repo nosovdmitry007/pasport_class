@@ -60,7 +60,7 @@ def yolo_4_round(put):
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
-            if confidence > 0.5:
+            if confidence > 0.3:
                 # Object detected
                 center_x = int(detection[0] * width)
                 center_y = int(detection[1] * height)
@@ -73,9 +73,10 @@ def yolo_4_round(put):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.4, 0.4)
     d = []
     l = []
+    print(indexes)
     for i in indexes:
         box = boxes[i]
         d.append(classes[class_ids[i]])
@@ -83,12 +84,13 @@ def yolo_4_round(put):
         d.append(confidences[i])
         flattenlist = lambda d:[item for element in d for item in flattenlist(element)] if type(d) is list else [d]
         l.append(flattenlist(d))
+    print(l)
     cat = l[0][0]
     y = int(l[0][2])
     x = int(l[0][1])
     h = int(l[0][4])
     w = int(l[0][3])
-    crop= img[zero(y - math.ceil(h * 0.2)):y + math.ceil(h * 1.2), zero(x - math.ceil(w * 0.2)):x + math.ceil(w * 1.2)]
+    crop= img[zero(y - math.ceil(h * 0.4)):y + math.ceil(h * 1.4), zero(x - math.ceil(w * 0.4)):x + math.ceil(w * 1.4)]
     crop = rotate_image(crop,int(cat))
     cv2.imwrite('crop.jpg', crop)
     auto_rotait(crop)

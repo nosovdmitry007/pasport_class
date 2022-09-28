@@ -49,7 +49,7 @@ def auto_rotait(img):
   heightImg, widthImg, channels = img.shape
   imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # ПРЕОБРАЗОВАНИЕ ИЗОБРАЖЕНИЯ В ОТТЕНКИ СЕРОГО
   imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1) # ДОБАВИТЬ РАЗМЫТИЕ ПО ГАУССУ
-  imgThreshold = cv2.Canny(imgBlur,20,20)#thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
+  imgThreshold = cv2.Canny(imgBlur,30,30)#thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
   kernel = np.ones((5, 5))
   imgDial = cv2.dilate(imgThreshold, kernel, iterations=2) # ПРИМЕНИТЕ РАСШИРЕНИЕ
   imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # НАНЕСИТЕ ЭРОЗИЮ
