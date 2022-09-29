@@ -19,23 +19,6 @@ class passport:
     def zero(self,n):
         return n * (n > 0)
 
-    def rotate_image(self,mat, angle):
-        """
-       Функция для поворота изображений
-        """
-        height, width = mat.shape[:2]
-        image_center = (width / 2,
-                        height / 2)
-        rotation_mat = cv2.getRotationMatrix2D(image_center, angle, 1.)
-        abs_cos = abs(rotation_mat[0, 0])
-        abs_sin = abs(rotation_mat[0, 1])
-        bound_w = int(height * abs_sin + width * abs_cos)
-        bound_h = int(height * abs_cos + width * abs_sin)
-        rotation_mat[0, 2] += bound_w / 2 - image_center[0]
-        rotation_mat[1, 2] += bound_h / 2 - image_center[1]
-        ser_nom = cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
-        return ser_nom
-
     def yolo_4_round(self,put):
         layer_names = self.net_round.getLayerNames()
         output_layers = [layer_names[i - 1] for i in self.net_round.getUnconnectedOutLayers()]
@@ -66,6 +49,7 @@ class passport:
         indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.3, 0.3)
         d = []
         l = []
+
         for i in indexes:
             box = boxes[i]
             d.append(self.classes_round[class_ids[i]])
@@ -73,13 +57,23 @@ class passport:
             d.append(confidences[i])
             flattenlist = lambda d:[item for element in d for item in flattenlist(element)] if type(d) is list else [d]
             l.append(flattenlist(d))
-        cat = l[0][0]
-        y = int(l[0][2])
-        x = int(l[0][1])
-        h = int(l[0][4])
-        w = int(l[0][3])
-        crop= img[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1), self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
-        crop = self.rotate_image(crop,int(cat))
+        if l:
+            cat = l[0][0]
+            y = int(l[0][2])
+            x = int(l[0][1])
+            h = int(l[0][4])
+            w = int(l[0][3])
+            crop= img[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1), self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+            if cat == '0':
+                pass
+            elif cat =='90':
+                crop = cv2.rotate(crop, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            elif cat =='180':
+                crop = cv2.rotate(crop, cv2.ROTATE_180)
+            elif cat =='270':
+                crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
+        else:
+            crop = ''
         return crop
 
     def reorder(self,myPoints):
@@ -106,7 +100,6 @@ class passport:
                     max_area = area
         return biggest,max_area
 
-    # @profile()
     def auto_rotait(self, img):
         heightImg, widthImg = img.shape[:2]
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -193,13 +186,13 @@ class passport:
                 elif 'series' not in cat:
                     ob = cat
                 if ob:
-                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.07)):y + math.ceil(h * 1.3),
+                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.07)):y + math.ceil(h * 1.1),
                                   self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
                 if 'series' in cat:
                     ob = cat
                     cropped = image[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1),
                               self.zero(x - math.ceil(w * 0.03)):x + math.ceil(w * 1.03)]
-                    oblasty[ob] = self.rotate_image(cropped, 90)
+                    oblasty[ob] = cv2.rotate(cropped, cv2.ROTATE_90_COUNTERCLOCKWISE) #self.rotate_image(cropped, 90)
         return oblasty
 
     def recognition_slovar(self, oblasty):
@@ -308,11 +301,14 @@ class passport:
 
     def detect_passport(self,photo):
 
-        crop = self.yolo_4_round(photo)
-        aut = self.auto_rotait(crop)
-        img, detect = self.yolo_4(aut)
-        obl = self.oblasty_yolo_4(img, detect)
-        rec = self.recognition_slovar(obl)
+        croped = self.yolo_4_round(photo)
+        if croped!='':
+            aut = self.auto_rotait(croped)
+            img, detect = self.yolo_4(aut)
+            obl = self.oblasty_yolo_4(img, detect)
+            rec = self.recognition_slovar(obl)
+        else:
+            rec = 'На фотографии не обнаружен паспорт'
         return rec
 
 
