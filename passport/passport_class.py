@@ -306,5 +306,13 @@ class passport:
         data['pasport'].append(d)
         return data['pasport']
 
+    def detect_passport(self,photo):
+
+        crop = self.yolo_4_round(photo)
+        aut = self.auto_rotait(crop)
+        img, detect = self.yolo_4(aut)
+        obl = self.oblasty_yolo_4(img, detect)
+        rec = self.recognition_slovar(obl)
+        return rec
 
 
