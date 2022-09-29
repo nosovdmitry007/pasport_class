@@ -11,9 +11,7 @@ reader = easyocr.Reader(['ru'],
                         gpu=False) #распознание с дообучением
 #распознание текста
 def recognition_slovar(oblasty):
-    start_time_r = time.time() #засекаем время выполнеия функции
-#__________________________________________________________________
-    #задаем начальные значения
+    start_time_r = time.time()
     data = {}
     data['pasport'] = []
     d = {}
@@ -23,12 +21,8 @@ def recognition_slovar(oblasty):
     ver = 0
     acc_ocr = 0
     col_ocr = 0
-#________________________________________________________
-    # d['ID'] = (jpg.split('.')[0]).split('/')[-1] #записываем номер фотографии (берем имя файла
-
-    for i,v in oblasty.items(): #цикл по всем найденым полям с их распределения по классам
+    for i,v in oblasty.items():
         image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB) #переводим области в серый цвет
-        #Для каждого класса устанавливаем свои ограничения на распознания классов
         if 'date' in i or 'code' in i or 'series' in i:
             result = reader.readtext(image, allowlist='0123456789-. ')
         elif 'surname' in i or 'name' in i or 'patronymic' in i:
@@ -55,7 +49,6 @@ def recognition_slovar(oblasty):
                         pole = pole + ' ' + str(result[k][1])
                         acc_ocr += result[k][2] * 100
                         col_ocr += 1
-        #ели поле не пустое то записываем результат распознавания (json +csv)
         if pole:
 
             pole = pole.strip()#удаляем пробелы вконце и в неачале
@@ -69,7 +62,6 @@ def recognition_slovar(oblasty):
                 if len(pole) >= 10:
                     if ver < result[k][2]:
                         series_and_number = pole
-#Убираем лишние знаки в распознание текста, если такие находятся и приводим к формату
             if 'issued_by_whom' in i or 'place_of_birth' in i or 'series_and_number' in i:
                 pass
             elif 'date' in i:
@@ -96,12 +88,30 @@ def recognition_slovar(oblasty):
         place_of_birth = place_of_birth.replace('С ', ' С. ')
     if issued_by_whom[:2] == 'C ':
         issued_by_whom = issued_by_whom.replace('С ', ' С. ')
-    place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-        .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
-    issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-        .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-        .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.').replace('.', '. ').replace('  ', ' ')
+    place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ')\
+                                    .replace(' С ', ' С. ')\
+                                    .replace(' Г ', ' Г. ')\
+                                    .replace('ОБЛ ', 'ОБЛ. ')\
+                                    .replace('ПОС ', 'ПОС. ')\
+                                    .replace('ДЕР ', 'ДЕР. ')\
+                                    .replace(' . ', '. ')\
+                                    .replace(' .', '.')\
+                                    .replace('  ', ' ')\
+                                    .replace('..', '.')\
+                                    .replace('.', '. ')\
+                                    .replace('  ', ' ')
+    issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ')\
+                                    .replace(' С ', ' С. ')\
+                                    .replace(' Г ', ' Г. ')\
+                                    .replace('ОБЛ ', 'ОБЛ. ')\
+                                    .replace('ПОС ', 'ПОС. ')\
+                                    .replace('ДЕР ', 'ДЕР. ')\
+                                    .replace(' . ', '. ')\
+                                    .replace(' .', '.')\
+                                    .replace('  ', ' ')\
+                                    .replace('..', '.')\
+                                    .replace('.', '. ')\
+                                    .replace('  ', ' ')
     if series_and_number:
         series_and_number = series_and_number.replace(' ', '')
         if len(series_and_number) == 10:
