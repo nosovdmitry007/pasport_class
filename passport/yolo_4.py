@@ -6,8 +6,8 @@ import pandas as pd
 def yolo_4(img):
     start_time = time.time()
     # Load Yolo
-    net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
-    with open("./passport.names","r") as f:
+    net = cv2.dnn.readNet("yolo/yolov4-obj_last.weights", "yolo/yolov4-obj.cfg")
+    with open("yolo/passport.names", "r") as f:
         classes = [line.strip() for line in f.readlines()]
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]

@@ -9,8 +9,8 @@ class passport:
                         user_network_directory='EasyOCR/user_network',
                         recog_network='custom_example',
                         gpu=False) # распознание с дообучением
-        self.net = cv2.dnn.readNet("yolov4-obj_last.weights", "yolov4-obj.cfg")
-        with open("passport.names", "r") as f:
+        self.net = cv2.dnn.readNet("yolo/yolov4-obj_last.weights", "yolo/yolov4-obj.cfg")
+        with open("yolo/passport.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
         self.net_round = cv2.dnn.readNet("yolo_round/yolov4-obj_last_round.weights", "yolo_round/yolov4-obj_round.cfg")
         with open("yolo_round/round.names","r") as f:
