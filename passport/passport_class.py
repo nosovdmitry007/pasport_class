@@ -78,7 +78,7 @@ class passport:
         x = int(l[0][1])
         h = int(l[0][4])
         w = int(l[0][3])
-        crop= img[self.zero(y - math.ceil(h * 0.4)):y + math.ceil(h * 1.4), self.zero(x - math.ceil(w * 0.4)):x + math.ceil(w * 1.4)]
+        crop= img[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1), self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
         crop = self.rotate_image(crop,int(cat))
         return crop
 
