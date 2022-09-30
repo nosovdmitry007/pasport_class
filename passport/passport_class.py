@@ -316,9 +316,9 @@ class Passport:
                     flag = 0
             else:
                 flag = 1
-            return rec, flag
+            return rec[0], flag
         else:
-            rec = 'На фотографии не обнаружен паспорт'
+            rec = {}
             return rec, 1
 
 
