@@ -15,8 +15,11 @@
 Пример распознавания паспорта:
 1. Создаём экземпляр класса:
 
-   `from passport_class import Passport
-psprt = Passport()`
+   `from passport_class`
+
+   `import Passport`
+
+   `psprt = Passport()`
 2. Запускаем распознавание данных:
 
    `result = psprt.detect_passport('path_to_image.jpg')`
