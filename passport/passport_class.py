@@ -215,8 +215,7 @@ class Passport:
                 result = self.reader.readtext(image, allowlist='.МУЖЕНмужен')
             else:
                 result = self.reader.readtext(image,
-                                        allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890',
-                                        min_size=25)
+                                        allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
             pole = ''
             for k in range(len(result)):
                 if result[k][2] * 100 >= 35:
@@ -292,7 +291,7 @@ class Passport:
             else:
                 series_and_number = 'поле распознано не полностью' + series_and_number
         else:
-            series_and_number = 'поле не распознано'
+            series_and_number = ''
         d['issued_by_whom'] = issued_by_whom.strip()
         d['place_of_birth'] = place_of_birth.strip()
         d['series_and_number'] = series_and_number.strip()
@@ -300,15 +299,26 @@ class Passport:
         return data['pasport']
 
     def detect_passport(self,photo):
-
+        pole = ['date_of_birth','date_of_issue','first_name','gender','issued_by_whom',
+                'patronymic','place_of_birth','series_and_number','surname','unit_code']
         croped = self.yolo_4_round(photo)
         if croped!='':
             aut = self.auto_rotait(croped)
             img, detect = self.yolo_4(aut)
             obl = self.oblasty_yolo_4(img, detect)
             rec = self.recognition_slovar(obl)
+            key = list(rec[0].keys())
+            value = list(rec[0].values())
+            if set(key) == set(pole):
+                if '' in value:
+                    flag = 1
+                else:
+                    flag = 0
+            else:
+                flag = 1
+            return rec, flag
         else:
             rec = 'На фотографии не обнаружен паспорт'
-        return rec
+            return rec, 1
 
 
