@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import easyocr
 import math
-class passport:
+class Passport:
     def __init__(self):
         self.reader = easyocr.Reader(['ru'],
                         model_storage_directory='EasyOCR/model',

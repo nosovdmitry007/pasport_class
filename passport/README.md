@@ -7,15 +7,19 @@
 2. Устанавливаем необхоимые библиотеки:
 
     `pip install --upgrade pip`
+   
+   `cd passport`
 
-    `pip install -r passport/requirements.txt`
+    `pip install -r requirements.txt`
 
-Пример запуска модуля для распознания паспорта:
-1. заходим в файл start.py
-2. в строке
+Пример распознавания паспорта:
+1. Создаём экземпляр класса:
 
-    `pprint.pprint(passport().detect_passport('[yuor photo]'))`
+   `from passport_class import Passport
+psprt = Passport()`
+2. Запускаем распознавание данных:
 
-меняем `[yuor photo] ` на путь к фотографии с паспортом
+   `result = psprt.detect_passport('path_to_image.jpg')`
+
 
 В будущем в модуль будут добавлены классы для распознания СНИЛС и ИНН.
