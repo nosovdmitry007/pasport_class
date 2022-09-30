@@ -4,7 +4,7 @@
 
 1. Клонируем репозиторий GIT:
 ```
-    git clone https://github.com/nosovdmitry007/pasport_class.git -b add_auto_rotation
+    git clone https://github.com/nosovdmitry007/pasport_class.git -b add_auto_round
 ```
 2. Устанавливаем необхоимые библиотеки:
 ```
