@@ -15,9 +15,7 @@
 Пример распознавания паспорта:
 1. Создаём экземпляр класса:
 
-   `from passport_class`
-
-   `import Passport`
+   `from passport_class import Passport`
 
    `psprt = Passport()`
 2. Запускаем распознавание данных:
