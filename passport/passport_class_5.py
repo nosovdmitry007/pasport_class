@@ -185,7 +185,6 @@ class Passport:
                     pole = pole[:3] + '-' + pole[3:6]
                     d[i.split('.', 1)[0]] = pole.upper().strip()
                 elif 'gender' in i:
-                    print(pole)
                     pole1 = ''
                     if 'Е' in pole.upper() or 'Н' in pole.upper() or 'ЕН' in pole.upper():
                         pole1 = 'ЖЕН.'
@@ -379,6 +378,7 @@ class INN(Passport):
             elif 'fio' in i:
                 result = self.reader.readtext(image,
                                          allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-')
+            print(result)
             pole = ''
             for k in range(len(result)):
                 if result[k][2] * 100 >= 30:
