@@ -78,7 +78,6 @@ class Passport:
         image = self.get_image_after_rotation(image)
         image = self.get_image_after_rotation(image)
         image = self.crop_img(image)
-
         return image
 
     def yolo_5(self, img):
