@@ -15,7 +15,7 @@
 3. Необходимо загрузить [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
 ```
 ├── yolo5 
-│   ├── about.txt
+├── about.txt
 │   ├── detect.pt
 │   ├── fio_INN.pt
 │   ├── inn_rotation.pt
