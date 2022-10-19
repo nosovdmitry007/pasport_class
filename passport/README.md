@@ -12,7 +12,7 @@
     cd passport
     pip install -r requirements.txt
 ```
-3. Необходимо распаковать [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
+3. Необходимо загрузить [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
 
 ├── yolo5 
 
