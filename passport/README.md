@@ -15,7 +15,7 @@
 ## Пример распознавания паспорта:
 1. Создаём экземпляр класса:
 ```
-   from passport_class_5 import Passport
+   from passport_class import Passport
    psprt = Passport()
 ```
 2. Запускаем распознавание данных:
@@ -45,7 +45,7 @@ result = ({'date_of_birth':'Дата рождения',
 ## Пример распознавания ИНН:
 1. Создаём экземпляр класса:
 ```
-   from passport_class_5 import INN
+   from passport_class import INN
    innsprt = INN()
 ```
 2. Запускаем распознавание данных:
