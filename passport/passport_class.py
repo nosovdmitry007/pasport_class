@@ -1,173 +1,104 @@
 import cv2
 import numpy as np
 import easyocr
-import json
 import math
-class passport:
+import torch
+import pandas as pd
+class Passport:
     def __init__(self):
         self.reader = easyocr.Reader(['ru'],
-                        model_storage_directory='./EasyOCR/model',
-                        user_network_directory='./EasyOCR/user_network',
+                        model_storage_directory='EasyOCR/model',
+                        user_network_directory='EasyOCR/user_network',
                         recog_network='custom_example',
-                        gpu=False) # распознание с дообучением
-        self.net = cv2.dnn.readNet("./yolov4-obj_last.weights", "./yolov4-obj.cfg")
-        with open("./passport.names", "r") as f:
-            self.classes = [line.strip() for line in f.readlines()]
-    def reorder(self,myPoints):
-
-        myPoints = myPoints.reshape((4, 2))
-        myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
-        add = myPoints.sum(1)
-
-        myPointsNew[0] = myPoints[np.argmin(add)]
-        myPointsNew[3] = myPoints[np.argmax(add)]
-        diff = np.diff(myPoints, axis=1)
-        myPointsNew[1] = myPoints[np.argmin(diff)]
-        myPointsNew[2] = myPoints[np.argmax(diff)]
-
-        return self.myPointsNew
-
-    def biggestContour(self,contours):
-        biggest = np.array([])
-        max_area = 0
-        for i in contours:
-            area = cv2.contourArea(i)
-            if area > 5000:
-                peri = cv2.arcLength(i, True)
-                approx = cv2.approxPolyDP(i, 0.02 * peri, True)
-                if area > max_area and len(approx) == 4:
-                    biggest = approx
-                    max_area = area
-        return self.biggest, self.max_area
-
-    # @profile()
-    def auto_rotait(self, photo):
-        ########################################################################
-
-        heightImg = 640
-        widthImg = 455
-        ########################################################################
-
-        ph = photo.split('/')[-1]
-        pathImage = photo
-
-        img = cv2.imread(pathImage)
-        img = cv2.resize(img, (widthImg, heightImg))  # ИЗМЕНЕНИЕ РАЗМЕРА ИЗОБРАЖЕНИЯ
-
-        imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # ПРЕОБРАЗОВАНИЕ ИЗОБРАЖЕНИЯ В ОТТЕНКИ СЕРОГО
-        imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)  # ДОБАВИТЬ РАЗМЫТИЕ ПО ГАУССУ
-        imgThreshold = cv2.Canny(imgBlur, 20, 20)  # thres[0],thres[1]) # ПРИМЕНИТЕ ХИТРОЕ РАЗМЫТИЕ
-        kernel = np.ones((5, 5))
-        imgDial = cv2.dilate(imgThreshold, kernel, iterations=2)  # ПРИМЕНИТЕ РАСШИРЕНИЕ
-        imgThreshold = cv2.erode(imgDial, kernel, iterations=1)  # НАНЕСИТЕ ЭРОЗИЮ
-
-        ## ## НАЙТИ ВСЕ КОНТУРЫ
-        contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL,
-                                               cv2.CHAIN_APPROX_SIMPLE)  # НАЙТИ ВСЕ КОНТУРЫ
-
-        # # НАЙДИТЕ САМЫЙ БОЛЬШОЙ КОНТУР
-        biggest, maxArea = self.biggestContour(contours)  # НАЙДИТЕ САМЫЙ БОЛЬШОЙ КОНТУР
-        if biggest.size != 0:
-            biggest = self.reorder(biggest)
-            pts1 = np.float32(biggest)  # ПОДГОТОВЬТЕ ТОЧКИ ДЛЯ ДЕФОРМАЦИИ
-            pts2 = np.float32(
-                [[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])  # ПОДГОТОВЬТЕ ТОЧКИ ДЛЯ ДЕФОРМАЦИИ
-            matrix = cv2.getPerspectiveTransform(pts1, pts2)
-            imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
-        else:
-            print(
-                'некоректная фотография, необходимо сфотографировать паспорт на однородном фоне\n фотография не обрезалась изменен размер')
-            imgWarpColored = img
-        # cv2.imwrite('oblosty/' + ph, imgWarpColored)
-        return self.imgWarpColored
-
-    def yolo_4(self, put):
-        # Load Yolo
-
-        layer_names = self.net.getLayerNames()
-        output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
-        # Loading image
-        img = cv2.imread(put)
-        height, width, channels = img.shape
-
-        # Detecting objects#
-        blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-        self.net.setInput(blob)
-        outs = self.net.forward(output_layers)
-
-        # Showing informations on the screen
-        class_ids = []
-        confidences = []
-        boxes = []
-        for out in outs:
-            for detection in out:
-                scores = detection[5:]
-                class_id = np.argmax(scores)
-                confidence = scores[class_id]
-                if confidence > 0.5:
-                    # Object detected
-                    center_x = int(detection[0] * width)
-                    center_y = int(detection[1] * height)
-                    w = int(detection[2] * width)
-                    h = int(detection[3] * height)
-                    # Rectangle coordinates
-                    x = int(center_x - w / 2)
-                    y = int(center_y - h / 2)
-                    boxes.append([x, y, w, h])
-                    confidences.append(float(confidence))
-                    class_ids.append(class_id)
-
-        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
-        d = []
-        z = []
-        for i in indexes:
-            box = boxes[i]
-            d.append(self.classes[class_ids[i]])
-            d.append(box)
-            d.append(confidences[i])
-            flattenlist = lambda d: [item for element in d for item in flattenlist(element)] if type(d) is list else [d]
-            z.append(flattenlist(d))
-            d = []
-        return img, z
-
-    def rotate_image(self,mat, angle):
-        """
-       Функция для поворота изображений (серийный номер)
-        """
-
-        height, width = mat.shape[:2]  # форма изображения имеет 3 измерения
-        image_center = (width / 2,
-                        height / 2)  # getRotationMatrix2D нужны координаты в обратном порядке (ширина, высота) по сравнению с формой
-
-        rotation_mat = cv2.getRotationMatrix2D(image_center, angle, 1.)
-
-        # вращение вычисляет cos и sin, принимая их абсолютные значения.
-        abs_cos = abs(rotation_mat[0, 0])
-        abs_sin = abs(rotation_mat[0, 1])
-
-        # найдите новые границы ширины и высоты
-        bound_w = int(height * abs_sin + width * abs_cos)
-        bound_h = int(height * abs_cos + width * abs_sin)
-
-        # вычтите старый центр изображения (возвращая изображение в исходное состояние) и добавьте новые координаты центра изображения.
-        rotation_mat[0, 2] += bound_w / 2 - image_center[0]
-        rotation_mat[1, 2] += bound_h / 2 - image_center[1]
-
-        # поверните изображение с новыми границами и преобразованной матрицей поворота
-        ser_nom = cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
-        return ser_nom
+                        gpu=False)
+        self.model_round = torch.hub.load('yolov5_master', 'custom', path='yolo5/rotation.pt', source='local')
+        self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/detect.pt', source='local')
 
     def zero(self,n):
         return n * (n > 0)
-    # вырезаем области после детекции YOLO4
 
-    def oblasty_yolo_4(self, image, box):
+    def rotate_image(self, mat, angle):
+        height, width = mat.shape[:2]
+        image_center = (width / 2, height / 2)
+        rotation_mat = cv2.getRotationMatrix2D(image_center, angle, 1.)
+        abs_cos = abs(rotation_mat[0, 0])
+        abs_sin = abs(rotation_mat[0, 1])
+        bound_w = int(height * abs_sin + width * abs_cos)
+        bound_h = int(height * abs_cos + width * abs_sin)
+        rotation_mat[0, 2] += bound_w / 2 - image_center[0]
+        rotation_mat[1, 2] += bound_h / 2 - image_center[1]
+        return cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
 
+
+    def get_angle_rotation(self, centre, point, target_angle):
+        new_point =(point[0] - centre[0], point[1] - centre[1])
+        a,b = new_point[0], new_point[1]
+        res = math.atan2(b,a)
+        if (res < 0) :
+              res += 2 * math.pi
+        return (math.degrees(res)+target_angle) % 360
+
+    def result(self,img):
+        return self.model_round(img)
+
+    def get_image_after_rotation(self, img):
+        results = self.result(img)
+        pd = results.pandas().xyxy[0]
+        pd = pd.assign(centre_x = pd.xmin + (pd.xmax-pd.xmin)/2)
+        pd = pd.assign(centre_y = pd.ymin + (pd.ymax-pd.ymin)/2)
+        tmp = pd.loc[pd['name']=='niz']
+        N, V = None, None
+        for index, row in tmp.iterrows():
+            N = (row['centre_x'], row['centre_y'])
+            break
+        tmp = pd.loc[pd['name']=='verh']
+        for index, row in tmp.iterrows():
+            V = (row['centre_x'], row['centre_y'])
+            break
+        if N == None or V == None:
+            return img
+
+        angle = self.get_angle_rotation(N, V, 90)
+        img = self.rotate_image(img, angle)
+        return img
+
+    def crop_img(self, img):
+        results = self.result(img)
+        pd = results.pandas().xyxy[0]
+        x1 =int(pd.xmin.min())
+        x2 = int(pd.xmax.max())
+        y1 = int(pd.ymin.min())
+        y2 = int(pd.ymax.max())
+        img = img[y1:y2,x1:x2]
+        return img
+
+    def get_crop(self,file):
+        image = cv2.imread(file)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = self.get_image_after_rotation(image)
+        image = self.get_image_after_rotation(image)
+        image = self.crop_img(image)
+        return image
+
+    def yolo_5(self, img):
+        results = self.model_detect(img)
+        df = results.pandas().xyxy[0]
+        df = df.drop(np.where(df['confidence'] < 0.7)[0])
+        # print(df)
+        ob = pd.DataFrame()
+        ob['class'] = df['name']
+        ob['x'] = df['xmin']
+        ob['y'] = df['ymin']
+        ob['w'] = df['xmax']-df['xmin']
+        ob['h'] = df['ymax']-df['ymin']
+        oblasty = ob.values.tolist()
+        return img, oblasty
+
+    def oblasty_yolo_5(self, image, box):
         oblasty = {}
         iss = 0
         plac = 0
-        # Сортируем список по у для того чтобы области шли по порядку сверху вниз
-        spissok = sorted(box, reverse=False, key=lambda x: x[2])  # spiss.sort(key=custom_key)
+        spissok = sorted(box, reverse=False, key=lambda x: x[2])
         for l in spissok:
             cat = l[0]
             y = int(l[2])
@@ -175,9 +106,8 @@ class passport:
             h = int(l[4])
             w = int(l[3])
             ob = ''
-            # обрезаем области и сохраняем их в словарь, добавляем к областе пиксели для увеличения области распознавания
             if ('signature' in cat) or ('photograph' in cat):
-                pass  # поля подпись и фотографию не распознаем, поэтому с ними ничего не делаем
+                pass
             else:
                 if 'issued_by_whom' in cat:
                     ob = cat + '_' + str(iss)
@@ -188,21 +118,16 @@ class passport:
                 elif 'series' not in cat:
                     ob = cat
                 if ob:
-                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.03)):y + math.ceil(h * 1.03),
-                              self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
+                    oblasty[ob] = image[self.zero(y - math.ceil(h * 0.07)):y + math.ceil(h * 1.1),
+                                  self.zero(x - math.ceil(w * 0.1)):x + math.ceil(w * 1.1)]
                 if 'series' in cat:
                     ob = cat
                     cropped = image[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1),
                               self.zero(x - math.ceil(w * 0.03)):x + math.ceil(w * 1.03)]
-                    oblasty[ob] = self.rotate_image(cropped, 90)
-
-        # Передаем словарь с областями на распознание
-
+                    oblasty[ob] = cv2.rotate(cropped, cv2.ROTATE_90_COUNTERCLOCKWISE) #self.rotate_image(cropped, 90)
         return oblasty
 
     def recognition_slovar(self, oblasty):
-        # __________________________________________________________________
-        # задаем начальные значения
         data = {}
         data['pasport'] = []
         d = {}
@@ -210,13 +135,8 @@ class passport:
         series_and_number = ''
         place_of_birth = ''
         ver = 0
-        acc_ocr = 0
-        col_ocr = 0
-        # ________________________________________________________
-        # d['ID'] = (jpg.split('.')[0]).split('/')[-1]  # записываем номер фотографии (берем имя файла
-
-        for i, v in oblasty.items():  # цикл по всем найденым полям с их распределения по классам
-            image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)  # переводим области в серый цвет
+        for i, v in oblasty.items():
+            image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
             # Для каждого класса устанавливаем свои ограничения на распознания классов
             if 'date' in i or 'code' in i or 'series' in i:
                 result = self.reader.readtext(image, allowlist='0123456789-. ')
@@ -227,18 +147,17 @@ class passport:
                 result = self.reader.readtext(image, allowlist='.МУЖЕНмужен')
             else:
                 result = self.reader.readtext(image,
-                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
+                                        allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-"№ .1234567890')
             pole = ''
-            # Сцепляем распознаные поля в одной области и подсчитыаем среднию увереность
             for k in range(len(result)):
                 if result[k][2] * 100 >= 35:
-                    pole = pole + ' ' + str(result[k][1])
-                    acc_ocr += result[k][2] * 100
-                    col_ocr += 1
-            # ели поле не пустое то записываем результат распознавания (json +csv)
+                    if str(result[k][1]).isnumeric():
+                        if result[k][2] * 100 >= 70:
+                            pole = pole + ' ' + str(result[k][1])
+                    else:
+                            pole = pole + ' ' + str(result[k][1])
             if pole:
-                pole = pole.strip()  # удаляем пробелы вконце и в неачале
-                # сцепляем
+                pole = pole.strip()
                 if 'issued_by_whom' in i:
                     issued_by_whom = issued_by_whom + pole + ' '
                 if 'place_of_birth' in i:
@@ -248,7 +167,6 @@ class passport:
                     if len(pole) >= 10:
                         if ver < result[k][2]:
                             series_and_number = pole
-                # Убираем лишние знаки в распознание текста, если такие находятся и приводим к формату
                 if 'issued_by_whom' in i or 'place_of_birth' in i or 'series_and_number' in i:
                     pass
                 elif 'date' in i:
@@ -259,28 +177,47 @@ class passport:
                     pole = pole.replace(' . ', '').replace(' ', '').replace('-', '')
                     pole = pole[:3] + '-' + pole[3:6]
                     d[i.split('.', 1)[0]] = pole.upper().strip()
-                    # заменяем пол
                 elif 'gender' in i:
-                    if 'Е' in pole.upper() or 'Н' in pole.upper():
-                        pole = 'ЖЕН.'
-                    elif 'У' in pole.upper() or 'М' in pole.upper():
-                        pole = 'МУЖ.'
+                    pole1 = ''
+                    if 'Е' in pole.upper() or 'Н' in pole.upper() or 'ЕН' in pole.upper():
+                        pole1 = 'ЖЕН.'
+                    if 'У' in pole.upper() or 'М' in pole.upper() or 'УЖ' in pole.upper():
+                        pole1 = 'МУЖ.'
+                    pole = pole1
                     d[i.split('.', 1)[0]] = pole.upper().strip()
                 else:
                     d[i.split('.', 1)[0]] = pole.replace('  ', ' ').upper().strip()
-        # пост обработка текста, подводим под формат паспорта
+
         place_of_birth = place_of_birth.upper()
         issued_by_whom = issued_by_whom.upper()
         if place_of_birth[:2] == 'C ':
             place_of_birth = place_of_birth.replace('С ', ' С. ')
         if issued_by_whom[:2] == 'C ':
             issued_by_whom = issued_by_whom.replace('С ', ' С. ')
-        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
-        issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ').replace(' С ', ' С. ')\
-            .replace(' Г ', ' Г. ').replace('ОБЛ ', 'ОБЛ. ').replace('ПОС ', 'ПОС. ').replace('ДЕР ', 'ДЕР. ')\
-            .replace(' . ', '. ').replace(' .', '.').replace('  ', ' ').replace('..', '.')
+        place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ')\
+                                        .replace(' С ', ' С. ')\
+                                        .replace(' Г ', ' Г. ')\
+                                        .replace('ОБЛ ', 'ОБЛ. ')\
+                                        .replace('ПОС ', 'ПОС. ')\
+                                        .replace('ДЕР ', 'ДЕР. ')\
+                                        .replace(' . ', '. ')\
+                                        .replace(' .', '.')\
+                                        .replace('  ', ' ')\
+                                        .replace('..', '.')\
+                                        .replace('.', '. ')\
+                                        .replace('  ', ' ')
+        issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ')\
+                                        .replace(' С ', ' С. ')\
+                                        .replace(' Г ', ' Г. ')\
+                                        .replace('ОБЛ ', 'ОБЛ. ')\
+                                        .replace('ПОС ', 'ПОС. ')\
+                                        .replace('ДЕР ', 'ДЕР. ')\
+                                        .replace(' . ', '. ')\
+                                        .replace(' .', '.')\
+                                        .replace('  ', ' ')\
+                                        .replace('..', '.')\
+                                        .replace('.', '. ')\
+                                        .replace('  ', ' ')
         if series_and_number:
             series_and_number = series_and_number.replace(' ', '')
             if len(series_and_number) == 10:
@@ -288,16 +225,163 @@ class passport:
             else:
                 series_and_number = 'поле распознано не полностью' + series_and_number
         else:
-            series_and_number = 'поле не распознано'
-        # Создаем файлы json and csv
+            series_and_number = ''
         d['issued_by_whom'] = issued_by_whom.strip()
         d['place_of_birth'] = place_of_birth.strip()
         d['series_and_number'] = series_and_number.strip()
         data['pasport'].append(d)
-        with open('data.json', 'w', encoding='utf-8') as f:
-            f.write(json.dumps(data, ensure_ascii=False))
-        # pprint.pprint(data['pasport'])
         return data['pasport']
 
+    def detect_passport(self,photo):
+        pole = ['date_of_birth','date_of_issue','first_name','gender','issued_by_whom',
+                'patronymic','place_of_birth','series_and_number','surname','unit_code']
+
+        croped = self.get_crop(photo)
+        if croped != '':
+            img, detect = self.yolo_5(croped)
+            obl = self.oblasty_yolo_5(img, detect)
+            rec = self.recognition_slovar(obl)
+            key = list(rec[0].keys())
+            value = list(rec[0].values())
+            if set(key) == set(pole):
+                if '' in value:
+                    flag = 1
+
+                else:
+                    flag = 0
+                    if len(rec[0]['date_of_birth']) != 10 or len(rec[0]['date_of_issue']) != 10 or len(rec[0]['series_and_number']) != 12 or len(rec[0]['unit_code']) != 7:
+                        flag = 1
+            else:
+                flag = 1
+
+            if flag == 1:
+                rec = {}
+            else:
+                rec = rec[0]
+            return rec, flag
+        else:
+            rec = {}
+            return rec, 1
 
 
+class INN(Passport):
+    def __init__(self):
+        self.reader = easyocr.Reader(['ru'],
+                        model_storage_directory='EasyOCR/model',
+                        user_network_directory='EasyOCR/user_network',
+                        recog_network='custom_example',
+                        gpu=False)
+        self.model_round_inn = torch.hub.load('yolov5_master', 'custom', path='yolo5/inn_rotation.pt', source='local')
+        self.model_detect_inn = torch.hub.load('yolov5_master', 'custom', path='yolo5/fio_INN.pt', source='local')
+    def result_inn(self,img):
+        return self.model_round_inn(img)
+
+    def get_angle_rotation_inn(self,centre, point, target_angle):
+        new_point =(point[0] - centre[0], point[1] - centre[1])  #передвигаем центр системы координат в точку центр. у нее будет (0,0) ищем новые координаты у точки point
+        a,b = new_point[0], new_point[1]
+        res = math.atan2(b,a) #ищем полярный угол у new_point
+        if (res < 0) :
+              res += 2 * math.pi
+        return (math.degrees(res)+target_angle) % 360  #возвращаем угол поворота для cv2
+
+    def get_image_after_rotation_inn(self, img, point1, point2):
+        results = self.result_inn(img)
+        pd = results.pandas().xyxy[0]
+        pd = pd.assign(centre_x = pd.xmin + (pd.xmax-pd.xmin)/2)
+        pd = pd.assign(centre_y = pd.ymin + (pd.ymax-pd.ymin)/2)
+        tmp = pd.loc[pd['name']==point1]
+        LEFT, RIGHT = None, None
+        for index, row in tmp.iterrows():
+            LEFT = (row['centre_x'], row['centre_y'])
+            break
+        #получим координаты верха, там где печать
+        tmp = pd.loc[pd['name']==point2]
+        for index, row in tmp.iterrows():
+            RIGHT = (row['centre_x'], row['centre_y'])
+            break
+        if LEFT == None or RIGHT == None: #похоже там нет нужных нам строк
+            return img
+
+        angle = self.get_angle_rotation_inn(LEFT, RIGHT, 0)
+        img = self.rotate_image(img, angle)  #вращаем той процедурой, что выше
+        return img
+    def get_crop_inn(self,file):
+        image = cv2.imread(file)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #сразу в серый
+        image = self.get_image_after_rotation_inn(image, point1 = 'sv', point2 = 'vo') #передаем в процедуру метки, котоыре будут использоваться для вращения первая - левая метка, вторая правая, будут ставиться в горизонт
+        image = self.get_image_after_rotation_inn(image, point1 = 'lev', point2 = 'prav')
+        return image
+    def yolo_5_inn(self, img):
+        results = self.model_detect_inn(img)
+        df = results.pandas().xyxy[0]
+        df = df.drop(np.where(df['confidence'] < 0.7)[0])
+        ob = pd.DataFrame()
+        ob['class'] = df['name']
+        ob['x'] = df['xmin']
+        ob['y'] = df['ymin']
+        ob['w'] = df['xmax']-df['xmin']
+        ob['h'] = df['ymax']-df['ymin']
+        oblasty = ob.values.tolist()
+        return img, oblasty
+
+    def oblasty_yolo_5_inn(self, image, box):
+        oblasty = {}
+        spissok = sorted(box, reverse=False, key=lambda x: x[2])
+        for l in spissok:
+            cat = l[0]
+            y = int(l[2])
+            x = int(l[1])
+            h = int(l[4])
+            w = int(l[3])
+            ob = cat
+            oblasty[ob] = image[self.zero(y - math.ceil(h * 0.1)):y + math.ceil(h * 1.1),
+                      self.zero(x - math.ceil(w * 0.03)):x + math.ceil(w * 1.03)]
+        return oblasty
+
+    def recognition_slovar_inn(self, oblasty):
+        data = {}
+        data['inn'] = []
+        d = {}
+        for i, v in oblasty.items():
+            image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
+            if 'inn' in i:
+                result = self.reader.readtext(image, allowlist='0123456789')
+            elif 'fio' in i:
+                result = self.reader.readtext(image,
+                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
+            pole = ''
+            for k in range(len(result)):
+                pole = pole + ' ' + str(result[k][1])
+            if pole:
+                pole = pole.strip()
+                if 'inn' in i:
+                    pole = pole.replace(' ','')
+                d[i.split('.', 1)[0]] = pole.upper().strip()
+        data['inn'].append(d)
+        return data['inn']
+
+    def detect_inn(self,photo):
+        pole = ['fio','inn']
+
+        croped = self.get_crop_inn(photo)
+        if croped != '':
+            img, detect = self.yolo_5_inn(croped)
+            obl = self.oblasty_yolo_5_inn(img, detect)
+            rec = self.recognition_slovar_inn(obl)
+            key = list(rec[0].keys())
+            value = list(rec[0].values())
+            if set(key) == set(pole):
+                if '' in value:
+                    flag = 1
+                else:
+                    flag = 0
+            else:
+                flag = 1
+            if flag == 1:
+                rec = {}
+            else:
+                rec = rec[0]
+            return rec, flag
+        else:
+            rec = {}
+            return rec, 1
