@@ -363,10 +363,10 @@ class INN(Passport):
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
             if 'inn' in i:
-                result = self.reader.readtext(image, allowlist='0123456789-. ')
+                result = self.reader.readtext(image, allowlist='0123456789')
             elif 'fio' in i:
                 result = self.reader.readtext(image,
-                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-')
+                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
             pole = ''
             for k in range(len(result)):
                 pole = pole + ' ' + str(result[k][1])
