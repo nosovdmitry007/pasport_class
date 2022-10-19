@@ -31,16 +31,12 @@ class Passport:
 
 
     def get_angle_rotation(self, centre, point, target_angle):
-        #centre - Точка относительно которой надо вращать. tuple (x,y)
-        #point - точка которую надо повернуть tuple (x,y)
-        #угол куда должна повернуться point. градусы от 0 до 360.   Принцип такой: 15 часов - 0 градусов, 12 часов - 90 градусов,   9 часов - 180 градусов,  18 часов - 270 грудусов.  Отрицательных градусов быть не должно
-
-        new_point =(point[0] - centre[0], point[1] - centre[1])  #передвигаем центр системы координат в точку центр. у нее будет (0,0) ищем новые координаты у точки point
+        new_point =(point[0] - centre[0], point[1] - centre[1])
         a,b = new_point[0], new_point[1]
-        res = math.atan2(b,a) #ищем полярный угол у new_point
+        res = math.atan2(b,a)
         if (res < 0) :
               res += 2 * math.pi
-        return (math.degrees(res)+target_angle) % 360  #возвращаем угол поворота для cv2
+        return (math.degrees(res)+target_angle) % 360
 
     def result(self,img):
         return self.model_round(img)
@@ -55,22 +51,20 @@ class Passport:
         for index, row in tmp.iterrows():
             N = (row['centre_x'], row['centre_y'])
             break
-        #получим координаты верха, там где печать
         tmp = pd.loc[pd['name']=='verh']
         for index, row in tmp.iterrows():
             V = (row['centre_x'], row['centre_y'])
             break
-        if N == None or V == None: #похоже там нет нужных нам строк
+        if N == None or V == None:
             return img
 
         angle = self.get_angle_rotation(N, V, 90)
-        img = self.rotate_image(img, angle)  #вращаем той процедурой, что выше
+        img = self.rotate_image(img, angle)
         return img
 
     def crop_img(self, img):
         results = self.result(img)
         pd = results.pandas().xyxy[0]
-        #определяем координаты вырезки
         x1 =int(pd.xmin.min())
         x2 = int(pd.xmax.max())
         y1 = int(pd.ymin.min())
@@ -82,7 +76,7 @@ class Passport:
         image = cv2.imread(file)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = self.get_image_after_rotation(image)
-        image = self.get_image_after_rotation(image) #второй подряд поворот еще лучше выравнивает.
+        image = self.get_image_after_rotation(image)
         image = self.crop_img(image)
 
         return image
