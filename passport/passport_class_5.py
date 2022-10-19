@@ -239,48 +239,29 @@ class Passport:
         data['pasport'].append(d)
         return data['pasport']
 
-    def detect_passport(self,photo,povorot):
+    def detect_passport(self,photo):
         pole = ['date_of_birth','date_of_issue','first_name','gender','issued_by_whom',
                 'patronymic','place_of_birth','series_and_number','surname','unit_code']
-        if povorot == 0:
-            # res = self.result(photo)
-            croped = self.get_crop(photo)
-            if croped != '':
-                img, detect = self.yolo_5(croped)
-                obl = self.oblasty_yolo_5(img, detect)
-                rec = self.recognition_slovar(obl)
-                key = list(rec[0].keys())
-                value = list(rec[0].values())
-                if set(key) == set(pole):
-                    if '' in value:
-                        flag = 1
-                    else:
-                        flag = 0
-                else:
-                    flag = 1
-                return rec[0], flag
-            else:
-                rec = {}
-                return rec, 1
-        else:
-            croped = cv2.imread(photo,cv2.COLOR_BGR2GRAY)
+
+        croped = self.get_crop(photo)
+        if croped != '':
             img, detect = self.yolo_5(croped)
-            if detect != '':
-                obl = self.oblasty_yolo_5(img, detect)
-                rec = self.recognition_slovar(obl)
-                key = list(rec[0].keys())
-                value = list(rec[0].values())
-                if set(key) == set(pole):
-                    if '' in value:
-                        flag = 1
-                    else:
-                        flag = 0
-                else:
+            obl = self.oblasty_yolo_5(img, detect)
+            rec = self.recognition_slovar(obl)
+            key = list(rec[0].keys())
+            value = list(rec[0].values())
+            if set(key) == set(pole):
+                if '' in value:
                     flag = 1
-                return rec[0], flag
+                else:
+                    flag = 0
             else:
-                rec = {}
-                return rec, 1
+                flag = 1
+            return rec[0], flag
+        else:
+            rec = {}
+            return rec, 1
+
 
 class INN(Passport):
     def __init__(self):
@@ -376,43 +357,24 @@ class INN(Passport):
         data['inn'].append(d)
         return data['inn']
 
-    def detect_inn(self,photo,povorot):
+    def detect_inn(self,photo):
         pole = ['fio','inn']
-        if povorot == 0:
-            croped = self.get_crop_inn(photo)
-            if croped != '':
-                img, detect = self.yolo_5_inn(croped)
-                obl = self.oblasty_yolo_5_inn(img, detect)
-                rec = self.recognition_slovar_inn(obl)
-                key = list(rec[0].keys())
-                value = list(rec[0].values())
-                if set(key) == set(pole):
-                    if '' in value:
-                        flag = 1
-                    else:
-                        flag = 0
-                else:
-                    flag = 1
-                return rec[0], flag
-            else:
-                rec = {}
-                return rec, 1
-        else:
-            croped = cv2.imread(photo,cv2.COLOR_BGR2GRAY)
+
+        croped = self.get_crop_inn(photo)
+        if croped != '':
             img, detect = self.yolo_5_inn(croped)
-            if detect != '':
-                obl = self.oblasty_yolo_5_inn(img, detect)
-                rec = self.recognition_slovar_inn(obl)
-                key = list(rec[0].keys())
-                value = list(rec[0].values())
-                if set(key) == set(pole):
-                    if '' in value:
-                        flag = 1
-                    else:
-                        flag = 0
-                else:
+            obl = self.oblasty_yolo_5_inn(img, detect)
+            rec = self.recognition_slovar_inn(obl)
+            key = list(rec[0].keys())
+            value = list(rec[0].values())
+            if set(key) == set(pole):
+                if '' in value:
                     flag = 1
-                return rec[0], flag
+                else:
+                    flag = 0
             else:
-                rec = {}
-                return rec, 1
+                flag = 1
+            return rec[0], flag
+        else:
+            rec = {}
+            return rec, 1
