@@ -246,10 +246,14 @@ class Passport:
             if set(key) == set(pole):
                 if '' in value:
                     flag = 1
+
                 else:
                     flag = 0
+                    if len(rec[0]['date_of_birth']) != 10 or len(rec[0]['date_of_issue']) != 10 or len(rec[0]['series_and_number']) != 12 or len(rec[0]['unit_code']) != 7:
+                        flag = 1
             else:
                 flag = 1
+
             if flag == 1:
                 rec = {}
             else:

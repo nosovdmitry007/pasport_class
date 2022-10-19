@@ -12,7 +12,7 @@
     cd passport
     pip install -r requirements.txt
 ```
-3. Необходимо распаковать [веса](https://disk.yandex.ru/d/NFlowNnvQgvyXQ) моделей в папку `yolo5`
+3. Необходимо распаковать [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
 
 ├── yolo5 
 
@@ -70,7 +70,7 @@ result = ({'date_of_birth':'Дата рождения',
 На выходе получаем данные в виде словаря и флага.
 
 ```
-result = ({'fio': 'ДВУРЕЧЕНСКИЙ ПАВЕЛ АЛЕКСАНДРОВИЧ', 
+result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ', 
             'inn': '482608013231'},
              0)
 ```
