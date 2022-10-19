@@ -20,7 +20,7 @@
 ```
 2. Запускаем распознавание данных:
 ```
-   result = psprt.detect_passport('path_to_image.jpg',0)
+   result = psprt.detect_passport('path_to_image.jpg')
 ```
 
 На выходе получаем данные в виде словаря и флага.
@@ -50,7 +50,7 @@ result = ({'date_of_birth':'Дата рождения',
 ```
 2. Запускаем распознавание данных:
 ```
-   result = innsprt.detect_inn('path_to_image.jpg',0)
+   result = innsprt.detect_inn('path_to_image.jpg')
 ```
 
 На выходе получаем данные в виде словаря и флага.
