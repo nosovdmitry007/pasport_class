@@ -283,7 +283,6 @@ class Passport:
                 return rec, 1
 
 class INN(Passport):
-    # __bases__ = Passport
     def __init__(self):
         self.reader = easyocr.Reader(['ru'],
                         model_storage_directory='EasyOCR/model',
@@ -294,7 +293,6 @@ class INN(Passport):
         self.model_detect_inn = torch.hub.load('yolov5_master', 'custom', path='yolo5/fio_INN.pt', source='local')
     def result_inn(self,img):
         return self.model_round_inn(img)
-
     def get_image_after_rotation_inn(self, img):
         results = self.result_inn(img)
         pd = results.pandas().xyxy[0]
@@ -320,7 +318,6 @@ class INN(Passport):
     def crop_img_inn(self, img):
         results = self.result_inn(img)
         pd = results.pandas().xyxy[0]
-        #определяем координаты вырезки
         x1 =int(pd.xmin.min())
         x2 = int(pd.xmax.max())
         y1 = int(pd.ymin.min())
@@ -333,14 +330,12 @@ class INN(Passport):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = self.get_image_after_rotation_inn(image)
         image = self.get_image_after_rotation_inn(image) #второй подряд поворот еще лучше выравнивает.
-        image = self.crop_img_inn(image)
 
         return image
     def yolo_5_inn(self, img):
         results = self.model_detect_inn(img)
         df = results.pandas().xyxy[0]
         df = df.drop(np.where(df['confidence'] < 0.7)[0])
-        # print(df)
         ob = pd.DataFrame()
         ob['class'] = df['name']
         ob['x'] = df['xmin']
@@ -352,8 +347,6 @@ class INN(Passport):
 
     def oblasty_yolo_5_inn(self, image, box):
         oblasty = {}
-        iss = 0
-        plac = 0
         spissok = sorted(box, reverse=False, key=lambda x: x[2])
         for l in spissok:
             cat = l[0]
@@ -372,21 +365,14 @@ class INN(Passport):
         d = {}
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
-            # Для каждого класса устанавливаем свои ограничения на распознания классов
             if 'inn' in i:
                 result = self.reader.readtext(image, allowlist='0123456789-. ')
             elif 'fio' in i:
                 result = self.reader.readtext(image,
                                          allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ-')
-            print(result)
             pole = ''
             for k in range(len(result)):
-                if result[k][2] * 100 >= 30:
-                    if str(result[k][1]).isnumeric():
-                        if result[k][2] * 100 >= 30:
-                            pole = pole + ' ' + str(result[k][1])
-                    else:
-                            pole = pole + ' ' + str(result[k][1])
+                pole = pole + ' ' + str(result[k][1])
             if pole:
                 pole = pole.strip()
                 d[i.split('.', 1)[0]] = pole.upper().strip()
@@ -396,7 +382,6 @@ class INN(Passport):
     def detect_inn(self,photo,povorot):
         pole = ['fio','inn']
         if povorot == 0:
-            # res = self.result(photo)
             croped = self.get_crop_inn(photo)
             if croped != '':
                 img, detect = self.yolo_5_inn(croped)
