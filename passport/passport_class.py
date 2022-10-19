@@ -250,7 +250,11 @@ class Passport:
                     flag = 0
             else:
                 flag = 1
-            return rec[0], flag
+            if flag == 1:
+                rec = {}
+            else:
+                rec = rec[0]
+            return rec, flag
         else:
             rec = {}
             return rec, 1
@@ -346,6 +350,8 @@ class INN(Passport):
                 pole = pole + ' ' + str(result[k][1])
             if pole:
                 pole = pole.strip()
+                if 'inn' in i:
+                    pole = pole.replace(' ','')
                 d[i.split('.', 1)[0]] = pole.upper().strip()
         data['inn'].append(d)
         return data['inn']
@@ -367,7 +373,11 @@ class INN(Passport):
                     flag = 0
             else:
                 flag = 1
-            return rec[0], flag
+            if flag == 1:
+                rec = {}
+            else:
+                rec = rec[0]
+            return rec, flag
         else:
             rec = {}
             return rec, 1
