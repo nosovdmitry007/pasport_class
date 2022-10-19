@@ -12,6 +12,20 @@
     cd passport
     pip install -r requirements.txt
 ```
+3. Необходимо распаковать [веса](https://disk.yandex.ru/d/NFlowNnvQgvyXQ) моделей в папку `yolo5`
+
+├── yolo5 
+
+│   ├── about.txt
+
+│   ├── detect.pt
+
+│   ├── fio_INN.pt
+
+│   ├── inn_rotation.pt
+
+│   └── povorot7.pt
+
 ## Пример распознавания паспорта:
 1. Создаём экземпляр класса:
 ```
