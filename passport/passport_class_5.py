@@ -293,44 +293,41 @@ class INN(Passport):
         self.model_detect_inn = torch.hub.load('yolov5_master', 'custom', path='yolo5/fio_INN.pt', source='local')
     def result_inn(self,img):
         return self.model_round_inn(img)
-    def get_image_after_rotation_inn(self, img):
+
+    def get_angle_rotation_inn(self,centre, point, target_angle):
+        new_point =(point[0] - centre[0], point[1] - centre[1])  #передвигаем центр системы координат в точку центр. у нее будет (0,0) ищем новые координаты у точки point
+        a,b = new_point[0], new_point[1]
+        res = math.atan2(b,a) #ищем полярный угол у new_point
+        if (res < 0) :
+              res += 2 * math.pi
+        return (math.degrees(res)+target_angle) % 360  #возвращаем угол поворота для cv2
+
+    def get_image_after_rotation_inn(self, img, point1, point2):
         results = self.result_inn(img)
         pd = results.pandas().xyxy[0]
         pd = pd.assign(centre_x = pd.xmin + (pd.xmax-pd.xmin)/2)
         pd = pd.assign(centre_y = pd.ymin + (pd.ymax-pd.ymin)/2)
-        tmp = pd.loc[pd['name']=='niz']
-        N, V = None, None
+        tmp = pd.loc[pd['name']==point1]
+        LEFT, RIGHT = None, None
         for index, row in tmp.iterrows():
-            N = (row['centre_x'], row['centre_y'])
+            LEFT = (row['centre_x'], row['centre_y'])
             break
         #получим координаты верха, там где печать
-        tmp = pd.loc[pd['name']=='verh']
+        tmp = pd.loc[pd['name']==point2]
         for index, row in tmp.iterrows():
-            V = (row['centre_x'], row['centre_y'])
+            RIGHT = (row['centre_x'], row['centre_y'])
             break
-        if N == None or V == None: #похоже там нет нужных нам строк
+        if LEFT == None or RIGHT == None: #похоже там нет нужных нам строк
             return img
 
-        angle = self.get_angle_rotation(N, V, 90)
+        angle = self.get_angle_rotation_inn(LEFT, RIGHT, 0)
         img = self.rotate_image(img, angle)  #вращаем той процедурой, что выше
         return img
-
-    def crop_img_inn(self, img):
-        results = self.result_inn(img)
-        pd = results.pandas().xyxy[0]
-        x1 =int(pd.xmin.min())
-        x2 = int(pd.xmax.max())
-        y1 = int(pd.ymin.min())
-        y2 = int(pd.ymax.max())
-        img = img[y1:y2,x1:x2]
-        return img
-
     def get_crop_inn(self,file):
         image = cv2.imread(file)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        image = self.get_image_after_rotation_inn(image)
-        image = self.get_image_after_rotation_inn(image) #второй подряд поворот еще лучше выравнивает.
-
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #сразу в серый
+        image = self.get_image_after_rotation_inn(image, point1 = 'sv', point2 = 'vo') #передаем в процедуру метки, котоыре будут использоваться для вращения первая - левая метка, вторая правая, будут ставиться в горизонт
+        image = self.get_image_after_rotation_inn(image, point1 = 'lev', point2 = 'prav')
         return image
     def yolo_5_inn(self, img):
         results = self.model_detect_inn(img)
