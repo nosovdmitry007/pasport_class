@@ -516,13 +516,7 @@ class Snils:
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
             if 'number_strah' in i:
                 result = self.reader.readtext(image, allowlist='0123456789- ')
-            elif 'fio1' in i:
-                result = self.reader.readtext(image,
-                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
-            elif 'fio2' in i:
-                result = self.reader.readtext(image,
-                                         allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
-            elif 'fio3' in i:
+            elif 'fio' in i:
                 result = self.reader.readtext(image,
                                          allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
             pole = ''
