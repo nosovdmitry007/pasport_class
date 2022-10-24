@@ -205,7 +205,8 @@ class Passport:
                                         .replace('  ', ' ')\
                                         .replace('..', '.')\
                                         .replace('.', '. ')\
-                                        .replace('  ', ' ')
+                                        .replace('  ', ' ')\
+                                        .replace('--', '-')
         issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ')\
                                         .replace(' С ', ' С. ')\
                                         .replace(' Г ', ' Г. ')\
@@ -217,7 +218,8 @@ class Passport:
                                         .replace('  ', ' ')\
                                         .replace('..', '.')\
                                         .replace('.', '. ')\
-                                        .replace('  ', ' ')
+                                        .replace('  ', ' ')\
+                                        .replace('--', '-')
         if series_and_number:
             series_and_number = series_and_number.replace(' ', '')
             if len(series_and_number) == 10:
@@ -255,13 +257,12 @@ class Passport:
                 flag = 1
 
             if flag == 1:
-                rec = {}
+                rec =rec[0]# {}
             else:
                 rec = rec[0]
             return rec, flag
         else:
-            rec = {}
-            return rec, 1
+            return {}, 1
 
 
 class INN(Passport):
