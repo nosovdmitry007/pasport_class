@@ -21,6 +21,7 @@ class Passport:
         sr.setModel("lapsrn",2)
 
         return sr.upsample(img)
+
     def zero(self,n):
         return n * (n > 0)
 
@@ -144,9 +145,8 @@ class Passport:
         ver = 0
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
-            if image.shape[0] <=25:
+            if image.shape[0] <=23:
                 image = self.threshold_image(image)
-            cv2.imwrite('test/'+i+'.jpg',image)
             # Для каждого класса устанавливаем свои ограничения на распознания классов
             if 'date' in i:
                 result = self.reader.readtext(image, allowlist='0123456789.')
