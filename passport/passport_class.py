@@ -147,6 +147,7 @@ class Passport:
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
             if image.shape[0] <=23:
                 image = self.threshold_image(image)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # Для каждого класса устанавливаем свои ограничения на распознания классов
             if 'date' in i:
                 result = self.reader.readtext(image, allowlist='0123456789.')
