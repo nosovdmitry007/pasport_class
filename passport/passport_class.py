@@ -596,6 +596,7 @@ class Snils:
         data = {}
         data['snils'] = []
         d = {}
+        fio=''
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
             if 'number_strah' in i:
@@ -608,7 +609,11 @@ class Snils:
                 pole = pole + ' ' + str(result[k][1])
             if pole:
                 pole = pole.strip()
-                d[i.split('.', 1)[0]] = pole.upper().strip()
+                if 'fio' in i:
+                    fio = fio + ' ' + pole.upper().strip()
+                else:
+                    d[i.split('.', 1)[0]] = pole.upper().strip()
+        d['fio'] = fio.strip()
         data['snils'].append(d)
         return data['snils']
 

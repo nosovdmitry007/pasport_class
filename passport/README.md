@@ -15,7 +15,7 @@
 3. Необходимо загрузить [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
 ```
 ├── yolo5 
-├── about.txt
+│   ├── about.txt
 │   ├── detect.pt
 │   ├── fio_INN.pt
 │   ├── inn_rotation.pt
@@ -88,9 +88,7 @@ result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ',
 На выходе получаем данные в виде словаря и флага.
 
 ```
-result = ({'fio1': 'ИВАНОВ',
-            'fio2': 'ИВАН',
-             'fio3': 'ИВАНОВИЧ', 
+result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ', 
             'number_strah': '187-220-276 69'},
              0)
 ```
