@@ -4,6 +4,8 @@ import easyocr
 import math
 import torch
 import pandas as pd
+
+
 class Passport:
     def __init__(self):
         self.reader = easyocr.Reader(['ru'],
@@ -13,14 +15,6 @@ class Passport:
                         gpu=False)
         self.model_round = torch.hub.load('yolov5_master', 'custom', path='yolo5/rotation.pt', source='local')
         self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/detect.pt', source='local')
-        self.path_img = "LapSRN/LapSRN_x2.pb"
-
-    def resiz(self,img):
-        sr = cv2.dnn_superres.DnnSuperResImpl.create()
-        sr.readModel(self.path_img)
-        sr.setModel("lapsrn",2)
-
-        return sr.upsample(img)
 
     def zero(self,n):
         return n * (n > 0)
@@ -36,7 +30,6 @@ class Passport:
         rotation_mat[0, 2] += bound_w / 2 - image_center[0]
         rotation_mat[1, 2] += bound_h / 2 - image_center[1]
         return cv2.warpAffine(mat, rotation_mat, (bound_w, bound_h))
-
 
     def get_angle_rotation(self, centre, point, target_angle):
         new_point =(point[0] - centre[0], point[1] - centre[1])
@@ -145,15 +138,16 @@ class Passport:
         ver = 0
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
-            if image.shape[0] <=23:
-                image = self.threshold_image(image)
+            # if image.shape[0] <=23:
+            #     image = self.resiz(image)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             # Для каждого класса устанавливаем свои ограничения на распознания классов
+
             if 'date' in i:
                 result = self.reader.readtext(image, allowlist='0123456789.')
-            if 'code' in i:
+            elif 'code' in i:
                 result = self.reader.readtext(image, allowlist='0123456789-')
-            if 'series' in i:
+            elif 'series' in i:
                 result = self.reader.readtext(image, allowlist='0123456789 ')
             elif 'surname' in i or 'name' in i or 'patronymic' in i:
                 result = self.reader.readtext(image,
@@ -205,10 +199,12 @@ class Passport:
 
         place_of_birth = place_of_birth.upper()
         issued_by_whom = issued_by_whom.upper()
+        
         if place_of_birth[:2] == 'C ':
             place_of_birth = place_of_birth.replace('С ', ' С. ')
         if issued_by_whom[:2] == 'C ':
             issued_by_whom = issued_by_whom.replace('С ', ' С. ')
+
         place_of_birth = place_of_birth.replace('ГОР ', 'ГОР. ')\
                                         .replace(' С ', ' С. ')\
                                         .replace(' Г ', ' Г. ')\
@@ -222,6 +218,7 @@ class Passport:
                                         .replace('.', '. ')\
                                         .replace('  ', ' ')\
                                         .replace('--', '-')
+
         issued_by_whom = issued_by_whom.replace('ГОР ', 'ГОР. ')\
                                         .replace(' С ', ' С. ')\
                                         .replace(' Г ', ' Г. ')\
@@ -408,7 +405,6 @@ class INN(Passport):
 
                         else:
                             final_res = final_res[final_res.xmin != result.iloc[obj1, 0]]
-
         return final_res
 
     def recognition_slovar_inn(self, oblasty):
@@ -481,6 +477,7 @@ class Snils:
 
         self.model_round = torch.hub.load('yolov5_master', 'custom', path='yolo5/snils_rotation.pt', source='local')
         self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/snils_detect.pt', source='local')
+        self.model_numbers = torch.hub.load('yolov5_master', 'custom', path='yolo5/yolov5m.pt', source='local')
 
     def rotate_image(self, mat, angle, point):
         height, width = mat.shape[:2]
@@ -592,6 +589,56 @@ class Snils:
                       self.zero(x - math.ceil(w * 0.03)):x + math.ceil(w * 1.03)]
         return oblasty
 
+    def Intersection(self, boxA, boxB):
+        # determine the (x, y)-coordinates of the intersection rectangle
+        xA = max(boxA[0], boxB[0])
+        yA = max(boxA[1], boxB[1])
+        xB = min(boxA[2], boxB[2])
+        yB = min(boxA[3], boxB[3])
+
+        # compute the area of intersection rectangle
+        interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+        return interArea
+
+    def IoU(self, boxA, boxB):
+        # compute the area of intersection rectangle
+        interArea = self.Intersection(boxA, boxB)
+
+        # compute the area of both the prediction and ground-truth rectangles
+        boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+        boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+
+        # calculation iou
+        iou = interArea / float(boxAArea + boxBArea - interArea)
+
+        # return the intersection over union value
+        return iou
+
+    def numbers_detect(self, img):
+
+        image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        result = self.model_numbers(image)
+
+        final_res = result.pandas().xyxy[0]
+        result = result.pandas().xyxy[0]
+
+        # delete intersection objects
+        for obj1 in range(len(result)):
+            for obj2 in range(len(result)):
+
+                boxA = result.iloc[obj1, :4].values
+                boxB = result.iloc[obj2, :4].values
+
+                if boxA.all() != boxB.all():
+                    if self.IoU(boxA, boxB) > 0.2:
+                        if result.iloc[obj1, 4] > result.iloc[obj2, 4]:
+                            final_res = final_res[final_res.xmin != result.iloc[obj2, 0]]
+
+                        else:
+                            final_res = final_res[final_res.xmin != result.iloc[obj1, 0]]
+        return final_res
+
+
     def recognition_slovar_snils(self, oblasty):
         data = {}
         data['snils'] = []
@@ -599,14 +646,24 @@ class Snils:
         fio=''
         for i, v in oblasty.items():
             image = cv2.cvtColor(v, cv2.COLOR_BGR2RGB)
+
+            # plt.imshow(image)
+            # plt.show()
+
             if 'number_strah' in i:
-                result = self.reader.readtext(image, allowlist='0123456789- ')
+                # result = self.reader.readtext(image, allowlist='0123456789- ')
+
+                numbs = self.numbers_detect(image).sort_values(by=['xmin']).iloc[:, 5].values
+                res_numbs = ''.join(str(e) for e in numbs)
+                res_numbs = f'{res_numbs[:3]}-{res_numbs[3:6]}-{res_numbs[6:9]}_{res_numbs[-2:]}'
+                result = [([], f'{res_numbs}', 0.0)]
+
             elif 'fio' in i:
                 result = self.reader.readtext(image,
                                          allowlist='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ- ')
             pole = ''
             for k in range(len(result)):
-                pole = pole + ' ' + str(result[k][1])
+                pole = pole + ' ' + str(result[k][1]).replace(' ', '').replace('_', ' ')
             if pole:
                 pole = pole.strip()
                 if 'fio' in i:
@@ -638,3 +695,4 @@ class Snils:
         else:
             rec = {}
             return rec, 1
+
