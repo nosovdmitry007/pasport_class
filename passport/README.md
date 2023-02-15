@@ -4,7 +4,7 @@
 
 1. Клонируем репозиторий GIT:
 ```
-    git clone https://github.com/nosovdmitry007/pasport_class.git -b YOLO_5
+    git clone https://github.com/Donsky1/pasport_class.git
 ```
 2. Устанавливаем необхоимые библиотеки:
 ```
@@ -95,3 +95,4 @@ result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ',
 Флаг = 1, паспорт не обнаружен, или хотя бы 1 поле не распознано
 
 Флаг = 0, все поля паспорта распознаны 
+
