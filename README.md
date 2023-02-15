@@ -77,12 +77,12 @@ result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ',
 ## Пример распознавания СНИЛС:
 1. Создаём экземпляр класса:
 ```
-   from passport_class import Snils
-    snilssprt = Snils()
+ from passport_class import Snils
+ snilssprt = Snils()
 ```
 2. Запускаем распознавание данных:
 ```
-   result = snilssprt.detect_inn('path_to_image.jpg')
+   result = snilssprt.detect_snils('path_to_image.jpg')
 ```
 
 На выходе получаем данные в виде словаря и флага.
