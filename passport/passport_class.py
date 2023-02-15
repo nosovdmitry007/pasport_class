@@ -16,7 +16,13 @@ class Passport:
         self.model_round = torch.hub.load('yolov5_master', 'custom', path='yolo5/rotation.pt', source='local')
         self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/detect.pt', source='local')
 
-    def zero(self,n):
+    @staticmethod
+    def save_bounding_boxes(result_image) -> None:
+        # boxes will save into runs/detect/exp
+        result_image.crop(save=True)
+        return None
+
+    def zero(self, n):
         return n * (n > 0)
 
     def rotate_image(self, mat, angle):
@@ -83,6 +89,7 @@ class Passport:
 
     def yolo_5(self, img):
         results = self.model_detect(img)
+        self.save_bounding_boxes(results)
         df = results.pandas().xyxy[0]
         df = df.drop(np.where(df['confidence'] < 0.7)[0])
         # print(df)
@@ -333,6 +340,7 @@ class INN(Passport):
 
     def yolo_5_inn(self, img):
         results = self.model_detect_inn(img)
+        self.save_bounding_boxes(results)
         df = results.pandas().xyxy[0]
         df = df.drop(np.where(df['confidence'] < 0.7)[0])
         ob = pd.DataFrame()
@@ -479,6 +487,12 @@ class Snils:
         self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/snils_detect.pt', source='local')
         self.model_numbers = torch.hub.load('yolov5_master', 'custom', path='yolo5/yolov5m.pt', source='local')
 
+    @staticmethod
+    def save_bounding_boxes(result_image) -> None:
+        # boxes will save into runs/detect/exp
+        result_image.crop(save=True)
+        return None
+
     def rotate_image(self, mat, angle, point):
         height, width = mat.shape[:2]
         image_center = (width/2, height/2)
@@ -564,6 +578,7 @@ class Snils:
 
     def yolo_5_snils(self, img):
         results = self.model_detect(img)
+        self.save_bounding_boxes(results)
         df = results.pandas().xyxy[0]
         df = df.drop(np.where(df['confidence'] < 0.6)[0])
         ob = pd.DataFrame()
