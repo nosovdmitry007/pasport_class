@@ -4,18 +4,18 @@
 
 1. Клонируем репозиторий GIT:
 ```
-    git clone https://github.com/nosovdmitry007/pasport_class.git -b YOLO_5
+git clone https://github.com/Donsky1/pasport_class.git
 ```
 2. Устанавливаем необхоимые библиотеки:
 ```
-    pip install --upgrade pip
-    cd passport
-    pip install -r requirements.txt
+pip install --upgrade pip
+cd passport
+pip install -r requirements.txt
 ```
 3. Необходимо загрузить [веса](https://disk.yandex.ru/d/phAGUf4b2XIEsw) моделей в папку `yolo5`
 ```
 ├── yolo5 
-├── about.txt
+│   ├── about.txt
 │   ├── detect.pt
 │   ├── fio_INN.pt
 │   ├── inn_rotation.pt
@@ -24,12 +24,12 @@
 ## Пример распознавания паспорта:
 1. Создаём экземпляр класса:
 ```
-   from passport_class import Passport
-   psprt = Passport()
+from passport_class import Passport
+psprt = Passport()
 ```
 2. Запускаем распознавание данных:
 ```
-   result = psprt.detect_passport('path_to_image.jpg')
+result = psprt.detect_passport('path_to_image.jpg')
 ```
 
 На выходе получаем данные в виде словаря и флага.
@@ -54,12 +54,12 @@ result = ({'date_of_birth':'Дата рождения',
 ## Пример распознавания ИНН:
 1. Создаём экземпляр класса:
 ```
-   from passport_class import INN
-   innsprt = INN()
+from passport_class import INN
+innsprt = INN()
 ```
 2. Запускаем распознавание данных:
 ```
-   result = innsprt.detect_inn('path_to_image.jpg')
+result = innsprt.detect_inn('path_to_image.jpg')
 ```
 
 На выходе получаем данные в виде словаря и флага.
@@ -74,6 +74,25 @@ result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ',
 Флаг = 0, все поля паспорта распознаны 
 
 
-В будущем в модуль будут добавлены классы для распознания СНИЛС и ИНН.
+## Пример распознавания СНИЛС:
+1. Создаём экземпляр класса:
+```
+from passport_class import Snils
+snilssprt = Snils()
+```
+2. Запускаем распознавание данных:
+```
+result = snilssprt.detect_snils('path_to_image.jpg')
+```
 
+На выходе получаем данные в виде словаря и флага.
+
+```
+result = ({'fio': 'ИВАНОВ ИВАН ИВАНОВИЧ', 
+            'number_strah': '187-220-276 69'},
+             0)
+```
+Флаг = 1, паспорт не обнаружен, или хотя бы 1 поле не распознано
+
+Флаг = 0, все поля паспорта распознаны 
 
