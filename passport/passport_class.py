@@ -8,12 +8,15 @@ import pandas as pd
 
 class Passport:
     def __init__(self):
+        #easyocr
         self.reader = easyocr.Reader(['ru'],
                         model_storage_directory='EasyOCR/model',
                         user_network_directory='EasyOCR/user_network',
                         recog_network='custom_example',
                         gpu=False)
+        #сетка для поворота
         self.model_round = torch.hub.load('yolov5_master', 'custom', path='yolo5/rotation.pt', source='local')
+        #сетка для определения областей
         self.model_detect = torch.hub.load('yolov5_master', 'custom', path='yolo5/detect.pt', source='local')
 
     def zero(self, n):
@@ -43,6 +46,7 @@ class Passport:
         return self.model_round(img)
 
     def get_image_after_rotation(self, img):
+        #запихнули в первую сетку для поворота она что-то вернула далее на основании результатов как-то определили углы на которые надо поврнуть. детально не разбирался
         results = self.result(img)
         pd = results.pandas().xyxy[0]
         pd = pd.assign(centre_x = pd.xmin + (pd.xmax-pd.xmin)/2)
@@ -58,7 +62,7 @@ class Passport:
             break
         if N == None or V == None:
             return img
-
+        #здесь определение угла и поворот картинки
         angle = self.get_angle_rotation(N, V, 90)
         img = self.rotate_image(img, angle)
         return img
@@ -75,12 +79,16 @@ class Passport:
 
     def get_crop(self,file):
         image = cv2.imread(file)
+        #перевод в оттенки серого
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #поворот в нормальный вид с помощью первой yolo
         image = self.get_image_after_rotation(image)
         image = self.get_image_after_rotation(image)
+        #обрезка
         image = self.crop_img(image)
         return image
 
+    #функция вызова второй сетки yolo для определения полей с данными
     def yolo_5(self, img):
         results = self.model_detect(img)
         # boxes will save into runs/detect/exp
@@ -251,14 +259,22 @@ class Passport:
     def detect_passport(self,photo):
         pole = ['date_of_birth','date_of_issue','first_name','gender','issued_by_whom',
                 'patronymic','place_of_birth','series_and_number','surname','unit_code']
-
+        #подготовка изображения внутри вызов 3х функций
+        #перевод в оттенки серого
+        #поворот в нормальный вид
+        #обрезка
         croped = self.get_crop(photo)
+        #если все прошло успешно
         if croped != '':
+            #вызов второй сетки определение областей
             img, detect = self.yolo_5(croped)
+            #обработка результатов yolo разбор зон картинки с метками и формирование словаря с результатами
             obl = self.oblasty_yolo_5(img, detect)
+            #распознавание и постобработка, замена М, УЖ, на МУЖ и.т.п
             rec = self.recognition_slovar(obl)
             key = list(rec[0].keys())
             value = list(rec[0].values())
+            #Контроль достоверности распознанного, по длинне полей номера паспорта и.т.п.
             if set(key) == set(pole):
                 if '' in value:
                     flag = 1
@@ -332,7 +348,7 @@ class INN(Passport):
                                                   point2='vo')  # передаем в процедуру метки, котоыре будут использоваться для вращения первая - левая метка, вторая правая, будут ставиться в горизонт
         image = self.get_image_after_rotation_inn(image, point1='lev', point2='prav')
         return image
-
+    
     def yolo_5_inn(self, img):
         results = self.model_detect_inn(img)
         # boxes will save into runs/detect/exp
@@ -701,4 +717,3 @@ class Snils:
         else:
             rec = {}
             return rec, 1
-

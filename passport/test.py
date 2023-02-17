@@ -11,7 +11,7 @@ IMAGES_PATH = 'images'
 # result = psprt.detect_passport(os.path.join(IMAGES_PATH, '20127.jpg'))
 # print('passport')
 # print(result)
-#
+# #
 # innsprt = INN()
 # result = innsprt.detect_inn(os.path.join(IMAGES_PATH, 'inn', '1006.jpg'))
 # print('inn')
