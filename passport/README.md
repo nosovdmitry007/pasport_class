@@ -6,6 +6,10 @@
 ```
 git clone https://github.com/Donsky1/pasport_class.git
 ```
+или
+```
+git clone https://github.com/Donsky1/passport_class_comment.git
+```
 2. Устанавливаем необхоимые библиотеки:
 ```
 pip install --upgrade pip
